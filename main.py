@@ -3,6 +3,7 @@ import os
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
+
 from backupManager.main import BrowserHistoryReader
 from classifier.main import HistoryClassifier
 

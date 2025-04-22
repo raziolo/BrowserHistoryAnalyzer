@@ -8,15 +8,17 @@ from pprint import pprint
 from typing import List, Dict, Optional
 from openai import OpenAI
 from datetime import datetime
+import app_settings
+  # AI model name from settings.py
 
+logger = app_settings.LOGGER
 
 
 class HistoryClassifier:
     def __init__(self, model_name: str = "local-model", base_url: str = "http://localhost:1234/v1"):
         self.client = OpenAI(base_url=base_url, api_key="not-needed")
-        self.model_name = model_name
+        self.model_name = app_settings.AI_MODEL_NAME
         self.backup_dir = Path(__file__).resolve().parent.parent / "backupManager" / "history_backups"
-        self.logger = logging.getLogger(__name__)
         self.classified_dir = Path(__file__).resolve().parent / "classified"
         self._create_classified_dir()
         self._init_db()  # Add database initialization
@@ -53,7 +55,7 @@ class HistoryClassifier:
     def save_classified_data(self, results: List[Dict], browser: str) -> Optional[Path]:
         """Save classified results to SQLite database"""
         if not results:
-            self.logger.warning("No results to save")
+            logger.warning("No results to save")
             return None
 
         db_path = self.classified_dir / "classified_history.db"
@@ -76,10 +78,10 @@ class HistoryClassifier:
                 ))
 
             conn.commit()
-            self.logger.info(f"Saved classified data to {db_path}")
+            logger.info(f"Saved classified data to {db_path}")
             return db_path
         except Exception as e:
-            self.logger.error(f"Database save failed: {e}")
+            logger.error(f"Database save failed: {e}")
             return None
         finally:
             conn.close()
@@ -90,7 +92,7 @@ class HistoryClassifier:
             self.classified_dir.mkdir(parents=True, exist_ok=True)
             return True
         except Exception as e:
-            self.logger.error(f"Failed to create classified directory: {e}")
+            logger.error(f"Failed to create classified directory: {e}")
             return False
 
 
@@ -99,7 +101,7 @@ class HistoryClassifier:
         try:
             backups = list(self.backup_dir.glob(f"{browser.lower()}_history.json"))
             if not backups:
-                self.logger.warning(f"No backups found for {browser}")
+                logger.warning(f"No backups found for {browser}")
                 return None
 
             latest_backup = max(backups, key=lambda f: f.stat().st_mtime)
@@ -107,7 +109,7 @@ class HistoryClassifier:
                 return json.load(f)
 
         except Exception as e:
-            self.logger.error(f"Failed to load {browser} backup: {e}")
+            logger.error(f"Failed to load {browser} backup: {e}")
             return None
 
     def _generate_category(self, entry: Dict) -> Dict:
@@ -130,7 +132,7 @@ class HistoryClassifier:
             return {**entry, "category": category}
 
         except Exception as e:
-            self.logger.error(f"Classification failed for {entry['url']}: {e}")
+            logger.error(f"Classification failed for {entry['url']}: {e}")
             return {**entry, "category": "Classification Failed"}
 
     def classify_history(self, browser: str, start_date: datetime, end_date: datetime) -> List[Dict]:
@@ -144,7 +146,7 @@ class HistoryClassifier:
         for entry in history:
             # Validate date field
             if not entry.get('last_visit'):
-                # self.logger.warning(f"Skipping entry with missing date: {entry['url']}")
+                self.logger.warning(f"Skipping entry with missing date: {entry['url']}")
                 continue
 
             try:
@@ -155,7 +157,7 @@ class HistoryClassifier:
                 if start_date <= entry_date <= end_date:
                     filtered.append(entry)
             except ValueError as e:
-                self.logger.warning(f"Invalid date '{entry['last_visit']}' in {entry['url']}: {e}")
+                logger.warning(f"Invalid date '{entry['last_visit']}' in {entry['url']}: {e}")
 
         # Rest of processing remains the same
         results = []

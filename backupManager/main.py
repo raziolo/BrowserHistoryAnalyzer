@@ -8,12 +8,8 @@ import json
 from datetime import datetime
 import csv
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
+import app_settings
+logger = app_settings.LOGGER
 
 
 class BrowserHistoryReader:
