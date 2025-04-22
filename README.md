@@ -43,11 +43,7 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
    .\venv\Scripts\activate
    # On Mac/Linux:
    source venv/bin/activate
-   
-   # Install dependencies
-   pip install -r requirements.txt
    ```
-
 
 3. **Install dependencies**  
    ```bash
@@ -99,15 +95,7 @@ AI_MODEL_NAME = "granite-3.1-8b-instruct"  # Override directly
 
 # ** Classification Parameters **
 DAYS_TO_ANALYZE = 31  # Number of last days to analyze
-
-CLASSIFICATION_PARAMETERS = {
-    "categories": [...],  # 40+ options
-    "temperature": 0.1,  # 0-1 (lower = more consistent)
-    "max_tokens": 1000   # Response length control, big number for thinking models
-}
 ```
-
----
 
 ## 🛠 Customization Guide
 
@@ -123,13 +111,13 @@ AI_MODELS = [
 ### 2. Category Fine-Tuning
 Modify `CLASSIFICATION_PARAMETERS`:
 ```python
-"categories": [
-    "Social Media",
-    "News",
-    # ...add/remove as needed
-],
-"temperature": 0.3  # Higher = more creative classifications ( Max 1.0)
-"max_tokens": 2000  # Response length control, big number for thinking models
+   "categories": [
+       "Social Media",
+       "News",
+       # ...add/remove as needed
+   ],
+   "temperature": 0.3  # Higher = more creative classifications ( Max 1.0)
+   "max_tokens": 2000  # Response length control, big number for thinking models
 ```
 
 ### 3. Backup Location
