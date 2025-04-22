@@ -1,4 +1,4 @@
-# 🌐 **Local Browser History Classifier**  
+# 🌐 **Local Browser History Analyzer**  
 
 **🔍 Analyze, classify, and visualize your browsing history—100% locally!**  
 
@@ -26,8 +26,8 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
 ### **Setup**  
 1. **Clone the repo**  
    ```bash
-   git clone https://github.com/raziolo/BrowserHistoryClassifier.git
-   cd BrowserHistoryClassifier
+   git clone https://github.com/raziolo/BrowserHistoryAnalyzer.git
+   cd BrowserHistoryAnalyzer
    ```
    
     **OR** download the ZIP file and extract it.
@@ -36,13 +36,13 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
 2. **Create and Activate Virtual Environment**  
    ```bash
    # Create virtual environment
-   python -m venv venv
+   python -m venv .venv
    
    # Activate it
    # On Windows:
-   .\venv\Scripts\activate
+   .\.venv\Scripts\activate
    # On Mac/Linux:
-   source venv/bin/activate
+   source .venv/bin/activate
    ```
 
 3. **Install dependencies**  
