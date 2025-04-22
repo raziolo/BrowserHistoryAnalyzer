@@ -1,5 +1,6 @@
 classifier/classified/
 backupManager/history_backups
+visualization/output
 .backups
 .idea
 .venv

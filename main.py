@@ -6,20 +6,21 @@ from pathlib import Path
 
 from backupManager.main import BrowserHistoryReader
 from classifier.main import HistoryClassifier
+from visualization.main import HistoryVisualizer
 
-# Configuration
-BACKUP_DIR = Path(__file__).parent / "backupManager" / "history_backups"
-DAYS_TO_ANALYZE = 7  # Analyze history from last 7 days
+
+import app_settings
+logger = app_settings.LOGGER
 
 
 def setup_backup() -> bool:
     """Ensure backup directory exists and has recent data"""
     try:
         # Create backup directory if needed
-        BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+        app_settings.BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 
         # Check if backups exist
-        backups = list(BACKUP_DIR.glob("*_history.json"))
+        backups = list(app_settings.BACKUP_DIR.glob("*_history.json"))
         if not backups:
             print("No backups found - creating new ones...")
             return True
@@ -59,7 +60,7 @@ def main():
 
     # Date range setup
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=DAYS_TO_ANALYZE)
+    start_date = end_date - timedelta(days=app_settings.DAYS_TO_ANALYZE)
 
     # Classification process
     print("\nClassifying history...")
@@ -80,6 +81,11 @@ def main():
     except Exception as e:
         logging.error(f"Classification failed: {e}")
         return
+
+    print("\nGenerating dashboard...")
+    visualizer = HistoryVisualizer()
+    dashboard_path = visualizer.generate_dashboard()
+    print(f"Dashboard generated at: {dashboard_path}")
 
 
 if __name__ == "__main__":

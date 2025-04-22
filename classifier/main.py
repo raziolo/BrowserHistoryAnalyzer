@@ -9,7 +9,7 @@ from typing import List, Dict, Optional
 from openai import OpenAI
 from datetime import datetime
 import app_settings
-  # AI model name from settings.py
+# AI model name from settings.py
 
 logger = app_settings.LOGGER
 
@@ -25,13 +25,7 @@ class HistoryClassifier:
 
 
 
-        # Configure classification parameters
-        self.classification_categories = {
-            "categories": ["Social Media", "News", "Shopping", "Education",
-                           "Entertainment", "Technology", "Other"],
-            "temperature": 0.3,
-            "max_tokens": 50
-        }
+
 
     def _init_db(self):
         """Initialize SQLite database with classified entries table"""
@@ -114,18 +108,19 @@ class HistoryClassifier:
 
     def _generate_category(self, entry: Dict) -> Dict:
         """Classify a single history entry using local model"""
-        prompt = f"""Analyze this browsing history entry and classify it into one of these categories: 
-        {', '.join(self.classification_categories['categories'])}.
-
-        Entry: {entry['title']} ({entry['url']})
-        Provide only the category name, nothing else."""
+        prompt = f"""
+            Classify this entry into one of: {', '.join(app_settings.CLASSIFICATION_PARAMETERS['categories'])}
+            Entry: "{entry['title']}" ({entry['url']})
+            If none apply, reply Other.
+            Respond with exactly one category name.
+            """
 
         try:
             response = self.client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model=self.model_name,
-                temperature=self.classification_categories['temperature'],
-                max_tokens=self.classification_categories['max_tokens']
+                temperature=app_settings.CLASSIFICATION_PARAMETERS['temperature'],
+                max_tokens=app_settings.CLASSIFICATION_PARAMETERS['max_tokens']
             )
 
             category = response.choices[0].message.content.strip()
@@ -146,7 +141,7 @@ class HistoryClassifier:
         for entry in history:
             # Validate date field
             if not entry.get('last_visit'):
-                self.logger.warning(f"Skipping entry with missing date: {entry['url']}")
+                logger.warning(f"Skipping entry with missing date: {entry['url']}")
                 continue
 
             try:
@@ -162,6 +157,7 @@ class HistoryClassifier:
         # Rest of processing remains the same
         results = []
         for idx, entry in enumerate(filtered):
+            continue
             classified_entry = self._generate_category(entry)
             results.append(classified_entry)
             if (idx + 1) % 5 == 0:
