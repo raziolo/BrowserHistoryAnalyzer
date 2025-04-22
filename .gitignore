@@ -7,7 +7,6 @@ visualization/output
 it_surely_already_exists.txt
 django_app/db.sqlite3
 
-
 # Byte-compiled / optimized / DLL files
 __pycache__
 *.py[cod]
