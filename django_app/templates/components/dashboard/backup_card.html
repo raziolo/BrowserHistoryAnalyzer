@@ -1,0 +1,61 @@
+<!-- Backup Status Card -->
+<div class="col-xxl-4 col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+        <div class="card-header border-0 mb-3">
+            <h5 class="fw-bold mb-0">📦 Browser Backup Status</h5>
+        </div>
+        <div class="card-body pt-0">
+            <!-- Chrome Status -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Chrome_icon_%28September_2014%29.svg/640px-Google_Chrome_icon_%28September_2014%29.svg.png" alt="Chrome Icon" class="me-2" style="width: 20px; height: 20px;">
+                    <span class="text-muted small">Chrome Status</span>
+                </div>
+                {% if backup_card_data.chrome.status %}
+                    <span class="badge rounded-pill bg-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Backup completed successfully">Backup OK</span>
+                {% else %}
+                    <span class="badge rounded-pill bg-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Backup failed">Failed</span>
+                {% endif %}
+            </div>
+
+            <!-- Firefox Status -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Mozilla_Firefox_logo_2013.svg/640px-Mozilla_Firefox_logo_2013.svg.png" alt="Firefox Icon" class="me-2" style="width: 20px; height: 20px;">
+                    <span class="text-muted small">Firefox Status</span>
+                </div>
+                {% if backup_card_data.firefox.status %}
+                    <span class="badge rounded-pill bg-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Backup completed successfully">Backup OK</span>
+                {% else %}
+                    <span class="badge rounded-pill bg-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Backup failed">Failed</span>
+                {% endif %}
+            </div>
+
+            <!-- Last Backup Time (shared) -->
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small">Last Backup</span>
+                {% if backup_card_data.last_backup %}
+                    <span class="badge rounded-pill bg-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Backup completed on: ">{{ backup_card_data.last_backup }}</span>
+                {% else %}
+                    <span class="badge rounded-pill bg-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Backup failed">No Backups</span>
+                {% endif %}
+            </div>
+
+            <!-- CTA Footer -->
+            <div class="status-footer mt-4">
+                <a href="{% url 'make_backup' %}" class="btn btn-primary w-100">Make Backup</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Add this script for tooltips -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>

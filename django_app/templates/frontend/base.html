@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %} | Backup Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+        }
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        /* Add dark mode styles */
+        .dark-mode {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .dark-mode .sidebar {
+            background-color: #2d2d2d !important;
+            border-right: 1px solid #404040;
+        }
+
+        .dark-mode .card {
+            background-color: #2d2d2d;
+            border-color: #404040;
+        }
+
+        .dark-mode .text-muted {
+            color: #8f8f8f !important;
+        }
+
+        .dark-mode .card-header {
+            background-color: #1c1c1c;
+            color: #ffffff;
+        }
+
+        .browser-status-item {
+            transition: all 0.2s ease;
+        }
+        .browser-status-item:hover {
+            transform: translateY(-2px);
+        }
+        .status-footer {
+            background-color: rgba(0, 0, 0, 0.02);
+            margin-left: -1rem;
+            margin-right: -1rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light">
+    <nav class="sidebar bg-white shadow-sm p-3">
+        <div class="d-flex flex-column h-100">
+            <h3 class="mb-4">🔒 Backup System</h3>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item">
+                    <a href="{% url 'home' %}" class="nav-link active" aria-current="page">
+                        🏠 Dashboard
+                    </a>
+                </li>
+                <!-- Add more navigation items here -->
+            </ul>
+
+            <div class="mt-auto">
+                <button id="themeToggle" class="btn btn-sm btn-outline-secondary w-100">
+                    🌓 Toggle Theme
+                </button>
+                <div class="text-muted small mt-2">
+                    Version 1.0.0
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container-fluid">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme handling
+        function setTheme(theme) {
+            document.body.className = theme === 'dark' ? 'dark-mode' : 'bg-light';
+            document.cookie = `theme=${theme}; path=/; max-age=31536000`; // 1 year
+            document.getElementById('themeToggle').innerHTML = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        // Initial load
+        const theme = document.cookie.match(/theme=(dark|light)/)?.[1] || 'light';
+        setTheme(theme);
+
+        // Toggle handler
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const newTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

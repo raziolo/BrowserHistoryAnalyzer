@@ -122,13 +122,20 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for entry in recent_history.firefox %}
-                                    <tr>
-                                        <td>{{ entry.title[:50] }}{% if entry.title|length > 50 %}...{% endif %}</td>
-                                        <td><span class="badge bg-primary">{{ entry.category }}</span></td>
-                                        <td>{{ entry.visit_count }}</td>
+                                    {% if recent_history.firefox|length == 0 %}
+                                    <tr class="highlight">
+                                        <td colspan="3" class="text-center">No recent activity found.</td>
                                     </tr>
-                                    {% endfor %}
+                                    {% else %}
+                                        {% for entry in recent_history.firefox %}
+                                        <tr>
+                                            <td>{{ entry.title[:50] }}{% if entry.title|length > 50 %}...{% endif %}</td>
+                                            <td><span class="badge bg-primary">{{ entry.category }}</span></td>
+                                            <td>{{ entry.visit_count }}</td>
+                                        </tr>
+
+                                        {% endfor %}
+                                    {% endif %}
                                 </tbody>
                             </table>
                         </div>

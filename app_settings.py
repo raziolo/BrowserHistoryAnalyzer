@@ -31,7 +31,7 @@ BACKUP_DIR = Path(__file__).parent / "backupManager" / "history_backups"
 
 # CLASSIFIER CONFIGURATION
 
-DAYS_TO_ANALYZE = 31  # Analyze history from last N days
+DAYS_TO_ANALYZE = 2  # Analyze history from last N days
 
 # Configure classification parameters
 CLASSIFICATION_PARAMETERS = {

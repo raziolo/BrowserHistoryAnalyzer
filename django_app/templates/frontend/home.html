@@ -1,0 +1,16 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard Overview</h1>
+    </div>
+
+    {% include 'components/dashboard/backup_card.html' with backup_card_data=backup_card_data %}
+
+
+</div>
+{% endblock %}
