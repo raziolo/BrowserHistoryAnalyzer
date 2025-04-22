@@ -1,5 +1,6 @@
 classifier/classified/
 backupManager/history_backups
+.backups
 .idea
 .venv
 it_surely_already_exists.txt

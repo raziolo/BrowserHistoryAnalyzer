@@ -1,12 +1,8 @@
 import sqlite3
 import platform
-import logging
 from pathlib import Path
-from pprint import pprint
 from typing import List, Dict, Optional
 import json
-from datetime import datetime
-import csv
 
 import app_settings
 logger = app_settings.LOGGER
@@ -100,7 +96,7 @@ class BrowserHistoryReader:
             logger.error(f"Unexpected error reading {path}: {e}")
             return []
 
-    def get_chrome_history(self, max_results: int = 100) -> List[Dict]:
+    def get_chrome_history(self, max_results: int = 99999) -> List[Dict]:
         """Get Chrome browsing history"""
         path = self._get_chrome_path()
         if not path:
@@ -116,7 +112,7 @@ class BrowserHistoryReader:
 
         return self._read_sqlite(path, query)
 
-    def get_firefox_history(self, max_results: int = 100) -> List[Dict]:
+    def get_firefox_history(self, max_results: int = 99999) -> List[Dict]:
         """Get Firefox browsing history"""
         profile_dir = self._get_firefox_profile()
         if not profile_dir:
