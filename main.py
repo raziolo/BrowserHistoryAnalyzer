@@ -67,11 +67,11 @@ def main():
     try:
         # Chrome classification
         chrome_results = classifier.classify_history("Chrome", start_date, end_date)
-        classifier.save_classified_data(chrome_results, "Chrome")
+        # classifier.save_classified_data(chrome_results, "Chrome")
 
         # Firefox classification
         firefox_results = classifier.classify_history("Firefox", start_date, end_date)
-        classifier.save_classified_data(firefox_results, "Firefox")
+        # classifier.save_classified_data(firefox_results, "Firefox")
 
         # Display summary
         print(f"\nClassification complete! Results saved to database.")

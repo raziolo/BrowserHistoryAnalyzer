@@ -18,6 +18,7 @@ class HistoryClassifier:
     def __init__(self, model_name: str = "local-model", base_url: str = "http://localhost:1234/v1"):
         self.client = OpenAI(base_url=base_url, api_key="not-needed")
         self.model_name = app_settings.AI_MODEL_NAME
+        self.model_thinking = app_settings.AI_MODEL_THINKING
         self.backup_dir = Path(__file__).resolve().parent.parent / "backupManager" / "history_backups"
         self.classified_dir = Path(__file__).resolve().parent / "classified"
         self._create_classified_dir()
@@ -43,6 +44,7 @@ class HistoryClassifier:
                 UNIQUE(url, last_visit)
             )
         ''')
+        cursor.execute('DELETE FROM history')  # Flush existing entries
         conn.commit()
         conn.close()
 
@@ -80,6 +82,39 @@ class HistoryClassifier:
         finally:
             conn.close()
 
+    def save_single_entry(self, entry: Dict, browser: str) -> bool:
+        """Save a single classified entry to SQLite database"""
+        if not entry:
+            logger.warning("No entry to save")
+            return False
+
+        db_path = self.classified_dir / "classified_history.db"
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+
+            cursor.execute('''
+                INSERT OR IGNORE INTO history 
+                (url, last_visit, title, visit_count, category, browser)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                entry['url'],
+                entry['last_visit'],
+                entry['title'],
+                entry.get('visit_count', 0),
+                entry['category'],
+                browser.lower()
+            ))
+
+            conn.commit()
+            logger.info(f"Saved classified data to {db_path}")
+            return True
+        except Exception as e:
+            logger.error(f"Database save failed: {e}")
+            return False
+        finally:
+            conn.close()
+
     def _create_classified_dir(self) -> bool:
         """Create classified data directory if needed"""
         try:
@@ -108,12 +143,14 @@ class HistoryClassifier:
 
     def _generate_category(self, entry: Dict) -> Dict:
         """Classify a single history entry using local model"""
-        prompt = f"""
-            Classify this entry into one of: {', '.join(app_settings.CLASSIFICATION_PARAMETERS['categories'])}
-            Entry: "{entry['title']}" ({entry['url']})
-            If none apply, reply Other.
-            Respond with exactly one category name.
-            """
+        prompt = f"""Analyze this browsing history entry and classify it into one of these categories: 
+                {', '.join(app_settings.CLASSIFICATION_PARAMETERS['categories'])}.
+
+                Entry: {entry['title']} ({entry['url']})
+                Provide only the category name, nothing else.
+                If the entry doesn't fit any category, return "Other"."""
+
+        logger.info(f"Classifying entry: {entry['url']}")
 
         try:
             response = self.client.chat.completions.create(
@@ -124,6 +161,16 @@ class HistoryClassifier:
             )
 
             category = response.choices[0].message.content.strip()
+            # Validate category against known categories
+            if self.model_thinking:
+                category = category.split("</think>")[0].strip()
+                #try to match one of the categories
+                category = next((cat for cat in app_settings.CLASSIFICATION_PARAMETERS['categories'] if cat.lower() in category.lower()), "Other")
+
+            if category not in app_settings.CLASSIFICATION_PARAMETERS['categories']:
+                logger.warning(f"Unknown category '{category}' for {entry['url']}")
+                category = "Other"
+
             return {**entry, "category": category}
 
         except Exception as e:
@@ -157,8 +204,10 @@ class HistoryClassifier:
         # Rest of processing remains the same
         results = []
         for idx, entry in enumerate(filtered):
-            continue
             classified_entry = self._generate_category(entry)
+            # Save each classified entry to the database
+            self.save_single_entry(classified_entry, browser)
+            logger.info(f"Classified entry: {classified_entry['url']} -> {classified_entry['category']}")
             results.append(classified_entry)
             if (idx + 1) % 5 == 0:
                 time.sleep(1)

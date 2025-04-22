@@ -26,24 +26,44 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
 ### **Setup**  
 1. **Clone the repo**  
    ```bash
-   git clone https://github.com/yourusername/local-history-classifier.git
-   cd local-history-classifier
+   git clone https://github.com/raziolo/BrowserHistoryClassifier.git
+   cd BrowserHistoryClassifier
+   ```
+   
+    **OR** download the ZIP file and extract it.
+
+
+2. **Create and Activate Virtual Environment**  
+   ```bash
+   # Create virtual environment
+   python -m venv venv
+   
+   # Activate it
+   # On Windows:
+   .\venv\Scripts\activate
+   # On Mac/Linux:
+   source venv/bin/activate
+   
+   # Install dependencies
+   pip install -r requirements.txt
    ```
 
-2. **Install dependencies**  
+
+3. **Install dependencies**  
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Configure LM Studio**  
+4. **Configure LM Studio**  
    - Download & run [LM Studio](https://lmstudio.ai/)  
    - Load your preferred model (e.g., `granite-3.1-8b-instruct`)  
    - Ensure the local API is running at `http://localhost:1234/v1`  
 
-4. **Run the app**  
+5. **Run the app**  
    ```bash
-   python main.py
+   python main.py # when done run `deactivate` or close the terminal
    ```
+   
 
 ---
 
@@ -69,27 +89,58 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
 - Recent browsing tables  
 
 ---
+## ⚙️ Configuration
+### All settings in `app_settings.py`:
 
-## 🔧 **Customization**  
-
-### **Using a Different Local LLM?**  
-Modify `classifier/main.py`:  
+#### Model Selection
 ```python
-classifier = HistoryClassifier(
-    model_name="your-model-name",  # e.g., "llama-3-8b"
-    base_url="http://localhost:your-port/v1"  # LM Studio or Ollama
-)
-```
+AI_MODEL_N = 2  # 0-9,  index N of model in AI_MODELS list
+AI_MODEL_NAME = "granite-3.1-8b-instruct"  # Override directly
 
-### **Changing Categories?**  
-Edit `classification_categories` in `classifier/main.py`:  
-```python
-self.classification_categories = {
-    "categories": ["Your", "Custom", "Categories", "Here"],
-    "temperature": 0.3,
-    "max_tokens": 50
+# ** Classification Parameters **
+DAYS_TO_ANALYZE = 31  # Number of last days to analyze
+
+CLASSIFICATION_PARAMETERS = {
+    "categories": [...],  # 40+ options
+    "temperature": 0.1,  # 0-1 (lower = more consistent)
+    "max_tokens": 1000   # Response length control, big number for thinking models
 }
 ```
+
+---
+
+## 🛠 Customization Guide
+
+### 1. Adding New Models
+Edit `AI_MODELS` list:
+```python
+AI_MODELS = [
+    {'name': 'your-model-identifier', 'thinking': True or False},
+    ...
+]
+```
+
+### 2. Category Fine-Tuning
+Modify `CLASSIFICATION_PARAMETERS`:
+```python
+"categories": [
+    "Social Media",
+    "News",
+    # ...add/remove as needed
+],
+"temperature": 0.3  # Higher = more creative classifications ( Max 1.0)
+"max_tokens": 2000  # Response length control, big number for thinking models
+```
+
+### 3. Backup Location
+```python
+BACKUP_DIR = Path("your/custom/path")  # Change backup storage
+```
+
+
+## 📊 **Dashboard Overview**
+![Dashboard Screenshot](visualization/output/dashboard_screenshot.png)
+
 
 ---
 
@@ -105,13 +156,7 @@ self.classification_categories = {
 📂 All files are kept locally:  
 - Backups → `backupManager/history_backups/`  
 - Classified data → `classified/classified_history.db`  
-- Dashboard → `visualization/output/browsing_dashboard.html`  
-
-### **Q: How do I analyze a specific date range?**  
-Modify `DAYS_TO_ANALYZE` in `main.py`:  
-```python
-DAYS_TO_ANALYZE = 30  # Analyze last 30 days
-```
+- Dashboard → `visualization/output/browsing_dashboard.html`
 
 ---
 
