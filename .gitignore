@@ -1,0 +1,4 @@
+classifier/classified/
+backupManager/history_backups
+.idea
+.venv
