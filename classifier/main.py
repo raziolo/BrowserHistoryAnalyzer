@@ -4,11 +4,11 @@ import logging
 import sqlite3
 import time
 from pathlib import Path
-from pprint import pprint
 from typing import List, Dict, Optional
 from openai import OpenAI
 from datetime import datetime
-import app_settings
+from django_app.HistoryApp import app_settings
+
 # AI model name from settings.py
 
 logger = app_settings.LOGGER
@@ -20,110 +20,9 @@ class HistoryClassifier:
         self.model_name = app_settings.AI_MODEL_NAME
         self.model_thinking = app_settings.AI_MODEL_THINKING
         self.backup_dir = Path(__file__).resolve().parent.parent / "backupManager" / "history_backups"
-        self.classified_dir = Path(__file__).resolve().parent / "classified"
-        self._create_classified_dir()
-        self._init_db()  # Add database initialization
+        self.status = {}
 
-
-
-
-
-    def _init_db(self):
-        """Initialize SQLite database with classified entries table"""
-        db_path = self.classified_dir / "classified_history.db"
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS history (
-                url TEXT,
-                last_visit TEXT,
-                title TEXT,
-                visit_count INTEGER,
-                category TEXT,
-                browser TEXT,
-                UNIQUE(url, last_visit)
-            )
-        ''')
-        cursor.execute('DELETE FROM history')  # Flush existing entries
-        conn.commit()
-        conn.close()
-
-    def save_classified_data(self, results: List[Dict], browser: str) -> Optional[Path]:
-        """Save classified results to SQLite database"""
-        if not results:
-            logger.warning("No results to save")
-            return None
-
-        db_path = self.classified_dir / "classified_history.db"
-        try:
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-
-            for entry in results:
-                cursor.execute('''
-                    INSERT OR IGNORE INTO history 
-                    (url, last_visit, title, visit_count, category, browser)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (
-                    entry['url'],
-                    entry['last_visit'],
-                    entry['title'],
-                    entry.get('visit_count', 0),
-                    entry['category'],
-                    browser.lower()
-                ))
-
-            conn.commit()
-            logger.info(f"Saved classified data to {db_path}")
-            return db_path
-        except Exception as e:
-            logger.error(f"Database save failed: {e}")
-            return None
-        finally:
-            conn.close()
-
-    def save_single_entry(self, entry: Dict, browser: str) -> bool:
-        """Save a single classified entry to SQLite database"""
-        if not entry:
-            logger.warning("No entry to save")
-            return False
-
-        db_path = self.classified_dir / "classified_history.db"
-        try:
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-
-            cursor.execute('''
-                INSERT OR IGNORE INTO history 
-                (url, last_visit, title, visit_count, category, browser)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (
-                entry['url'],
-                entry['last_visit'],
-                entry['title'],
-                entry.get('visit_count', 0),
-                entry['category'],
-                browser.lower()
-            ))
-
-            conn.commit()
-            logger.info(f"Saved classified data to {db_path}")
-            return True
-        except Exception as e:
-            logger.error(f"Database save failed: {e}")
-            return False
-        finally:
-            conn.close()
-
-    def _create_classified_dir(self) -> bool:
-        """Create classified data directory if needed"""
-        try:
-            self.classified_dir.mkdir(parents=True, exist_ok=True)
-            return True
-        except Exception as e:
-            logger.error(f"Failed to create classified directory: {e}")
-            return False
-
+        from frontend.models import HistoryEvent
 
     def _load_latest_backup(self, browser: str) -> Optional[List[Dict]]:
         """Load most recent backup file for a browser"""
@@ -183,7 +82,6 @@ class HistoryClassifier:
         if not history:
             return []
 
-
         filtered = []
         for entry in history:
             # Validate date field
@@ -201,16 +99,37 @@ class HistoryClassifier:
             except ValueError as e:
                 logger.warning(f"Invalid date '{entry['last_visit']}' in {entry['url']}: {e}")
 
+        if not filtered:
+            logger.warning(f"No entries found for {browser} within the specified date range")
+            return []
+
+        # get number of entries
+
+        num_entries = len(filtered)
+        processed = 0
+
         # Rest of processing remains the same
         results = []
         for idx, entry in enumerate(filtered):
             classified_entry = self._generate_category(entry)
-            # Save each classified entry to the database
-            self.save_single_entry(classified_entry, browser)
+            # Update progress
+            processed += 1
+
             logger.info(f"Classified entry: {classified_entry['url']} -> {classified_entry['category']}")
             results.append(classified_entry)
             if (idx + 1) % 5 == 0:
-                time.sleep(1)
+                time.sleep(0.1)  # Rate limit to avoid overwhelming the model
+
+            self.status = {
+                "browser": browser.lower(),
+                "total": num_entries,
+                "processed": processed,
+                "remaining": num_entries - processed
+            }
+
+        # reset status
+        self.status = {}
+
 
         return results
 
@@ -244,11 +163,10 @@ if __name__ == "__main__":
     )
 
     print("Classifying Chrome History:")
-    chrome_results = classifier.classify_history("Chrome")
-    chrome_save_path = classifier.save_classified_data(chrome_results, "Chrome")
-    classifier.print_results(chrome_results, chrome_save_path)
+    chrome_results = classifier.classify_history("chrome")
+    classifier.print_results(chrome_results)
 
     print("\nClassifying Firefox History:")
-    firefox_results = classifier.classify_history("Firefox")
-    firefox_save_path = classifier.save_classified_data(firefox_results, "Firefox")
-    classifier.print_results(firefox_results, firefox_save_path)
+    firefox_results = classifier.classify_history("firefox")
+    classifier.print_results(firefox_results)
+

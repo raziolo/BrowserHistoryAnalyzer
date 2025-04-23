@@ -1,15 +1,12 @@
 # main.py (project root)
-import os
 import logging
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from backupManager.main import BrowserHistoryReader
 from classifier.main import HistoryClassifier
-from visualization.main import HistoryVisualizer
 
+from django_app.HistoryApp import app_settings
 
-import app_settings
 logger = app_settings.LOGGER
 
 

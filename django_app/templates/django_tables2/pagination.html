@@ -1,0 +1,53 @@
+<!-- templates/django_tables2/pagination.html -->
+{% load i18n %}
+
+{% if table.page %}
+  <div class="btn-group">
+    <!-- Previous Button -->
+    {% if table.page.has_previous %}
+      <button hx-get="?page={{ table.page.previous_page_number }}"
+              hx-target="#content"
+              hx-swap="innerHTML"
+              hx-push-url="true"
+              class="btn btn-outline">
+        « {% trans "Precedente" %}
+      </button>
+    {% else %}
+      <button class="btn btn-outline" disabled>
+        « {% trans "Precedente" %}
+      </button>
+    {% endif %}
+
+    <!-- Page Numbers -->
+    {% for num in table.paginator.page_range %}
+      {% if table.page.number == num %}
+        <button class="btn btn-primary" disabled>{{ num }}</button>
+      {% else %}
+        <button hx-get="?page={{ num }}"
+                hx-target="#content"
+                hx-swap="innerHTML"
+              hx-push-url="true"
+
+                class="btn btn-outline">
+          {{ num }}
+        </button>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Next Button -->
+    {% if table.page.has_next %}
+      <button hx-get="?page={{ table.page.next_page_number }}"
+              hx-target="#content"
+              hx-swap="innerHTML"
+              hx-push-url="true"
+
+              class="btn btn-outline">
+        {% trans "Successivo" %} »
+      </button>
+    {% else %}
+      <button class="btn btn-outline" disabled>
+        {% trans "Successivo" %} »
+      </button>
+    {% endif %}
+  </div>
+{% endif %}

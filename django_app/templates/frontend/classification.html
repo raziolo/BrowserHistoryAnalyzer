@@ -1,0 +1,106 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Classification{% endblock %}
+
+{% block content %}
+<form id="classification-form" action="{% url 'classification' %}" method="POST" x-data="classification()" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+    {% csrf_token %}
+
+    {# Page Header #}
+    <div class="col-span-full">
+        <h1 class="text-3xl font-bold text-base-content mb-2">Classification</h1>
+        <div class="divider mb-6"></div>
+    </div>
+
+    {# Original Classification Card #}
+    <div class="col-span-1">
+        <div class="card bg-gradient-to-br from-base-100 to-base-200 shadow-2xl h-full transform transition hover:scale-[1.01]">
+            <div class="card-body flex flex-col">
+                {# Header Section #}
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="avatar">
+                        <div class="w-12 rounded-full text-center bg-primary/10">
+                            <i class="bi bi-database" style="font-size: 30px; color: #5B80B2"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="card-title text-lg">Classification</h2>
+                    </div>
+                </div>
+
+                {# Status Timeline #}
+                <div class="timeline timeline-vertical my-6">
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <p class="text-sm font-medium">Last Analysis</p>
+                            <div class="text-xs text-base-content/60">
+                                {% if last_backup %}
+                                    {{ last_backup }}
+                                {% else %}
+                                    Never performed
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Action Button #}
+                <div class="mt-auto">
+                    <button
+                        type="submit"
+                        class="btn btn-block btn-primary rounded-full gap-2"
+                        {% if not can_start_classification %} disabled {% endif %}
+                    >
+                        Start Classification
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if not can_start_classification %}
+    {# New Identical Card - Added Right Here #}
+    <div class="col-span-1">
+        <div class="card bg-gradient-to-br from-base-100 to-base-200 shadow-2xl h-full transform transition hover:scale-[1.01]">
+            <div class="card-body flex flex-col">
+                {# Header Section #}
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="avatar">
+                        <div class="w-12 rounded-full text-center bg-secondary/10">
+                            <i class="bi bi-clock-history" style="font-size: 30px; color: #8A4EBF"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="card-title text-lg">Current Classification</h2>
+                        <h2 class="text-sm text-base-content/60">In progress {{ browser }}</h2>
+                    </div>
+                </div>
+                {# HTMX Polling Section #}
+                <div
+                    hx-get="{% url 'classification_status' %}"
+                    hx-trigger="every 1s"
+                    hx-swap="innerHTML"
+                    class="flex-1 my-4"
+                >
+                    {# Initial loading state #}
+                    <div class="flex items-center justify-center h-full">
+                        <span class="loading loading-dots loading-lg text-primary"></span>
+                    </div>
+                </div>
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Additional Cards or Content can be added here #}
+
+</form>
+{% endblock %}

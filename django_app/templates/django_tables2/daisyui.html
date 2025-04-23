@@ -1,0 +1,71 @@
+<!-- templates/django_tables2/daisyui.html -->
+{% load django_tables2 %}
+{% load i18n %}
+
+<!-- Container with responsive behavior -->
+<div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
+  <!-- Desktop view (hidden on very small screens) -->
+  <table class="table table-zebra w-full hidden sm:table">
+    <thead>
+      <tr>
+        {% for column in table.columns %}
+        <th>
+          {% if column.orderable %}
+          <button hx-get="{{ column.order_by_alias.next }}" hx-target="#content" hx-swap="innerHTML" class="link link-hover bg-transparent border-none p-0">
+            {{ column.header }}
+          </button>
+          {% else %}
+          {{ column.header }}
+          {% endif %}
+        </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in table.paginated_rows %}
+      <tr>
+        {% for cell in row %}
+        <td>{{ cell }}</td>
+        {% endfor %}
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="{{ table.columns|length }}" class="text-center py-4">
+          {{ table.empty_text|default:"No data available" }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Mobile view (card-like layout, visible only on small screens) -->
+  <div class="grid grid-cols-1 gap-4 sm:hidden">
+    {% for row in table.paginated_rows %}
+    <div class="bg-base-100 p-4 rounded-box shadow-sm border border-base-content/10">
+      {% for column, cell in row.items %}
+      <div class="py-2 border-b border-base-content/5 last:border-b-0">
+        <div class="font-medium text-sm opacity-70">{{ column.header }}</div>
+        {% if column.header == "Azioni" %}
+        <!-- Special handling for action buttons -->
+        <div class="grid grid-cols-2 gap-2 mt-1">
+          {{ cell|safe }}
+        </div>
+        {% else %}
+        <div>{{ cell }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% empty %}
+    <div class="text-center py-4">
+      {{ table.empty_text|default:"No data available" }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if table.page %}
+<div class="mt-4 flex justify-center">
+  {% include "django_tables2/pagination.html" %}
+</div>
+{% endif %}

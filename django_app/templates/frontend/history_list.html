@@ -1,0 +1,20 @@
+<!-- frontend/templates/frontend/history_list.html -->
+{% extends "frontend/base.html" %}
+{% load django_tables2 %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Browser History</h2>
+
+    <!-- History Table -->
+    <div class="card">
+        <div class="card-body">
+            <div id="content" class="overflow-x-auto">
+                {% render_table table %}
+              </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

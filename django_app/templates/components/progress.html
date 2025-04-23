@@ -1,0 +1,29 @@
+<div class="timeline timeline-vertical">
+    <div class="timeline-item">
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">
+            <p class="text-sm font-medium">Current Progress</p>
+            <div class="text-xs text-base-content/60">
+                {{ progress }}% Complete
+            </div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="timeline-marker timeline-marker-success"></div>
+        <div class="timeline-content">
+            <p class="text-sm font-medium">Files Processed</p>
+            <div class="text-xs text-base-content/60">
+                {{ processed }}/{{ total }}
+            </div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="timeline-marker timeline-marker-success"></div>
+        <div class="timeline-content">
+            <p class="text-sm font-medium">Current Browser</p>
+            <div class="text-xs text-base-content/60">
+                {{ browser|title }}
+            </div>
+        </div>
+    </div>
+</div>

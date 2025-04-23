@@ -97,6 +97,11 @@ AI_MODEL_NAME = "granite-3.1-8b-instruct"  # Override directly
 DAYS_TO_ANALYZE = 31  # Number of last days to analyze
 ```
 
+### 🤠 Run Django App
+```bash
+python ./django_app/run_django_frontend.py
+``` 
+
 ## 🛠 Customization Guide
 
 ### 1. Adding New Models
@@ -126,10 +131,8 @@ BACKUP_DIR = Path("your/custom/path")  # Change backup storage
 ```
 
 
-## 📊 **Dashboard Overview**
-![Dashboard Screenshot](visualization/output/dashboard_screenshot.png)
-
-
+## 📊 **Django Dashboard Overview**
+![Dashboard Screenshot](https://i.ibb.co/7NyQNc8p/image.png)
 ---
 
 ## ❓ **FAQs**  

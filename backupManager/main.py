@@ -4,23 +4,26 @@ from pathlib import Path
 from typing import List, Dict, Optional
 import json
 
-import app_settings
-logger = app_settings.LOGGER
+
+
 
 
 class BrowserHistoryReader:
     def __init__(self):
         self.system = platform.system()
         self.home = Path.home()
-        self.backup_dir = Path(__file__).resolve().parent / "history_backups"
+        from HistoryApp import app_settings
+        self.app_settings = app_settings
+
+        self.logger = app_settings.LOGGER
 
     def _create_backup_dir(self) -> bool:
         """Create backup directory if it doesn't exist"""
         try:
-            self.backup_dir.mkdir(parents=True, exist_ok=True)
+            self.app_settings.BACKUP_DIR.mkdir(parents=True, exist_ok=True)
             return True
         except Exception as e:
-            logger.error(f"Failed to create backup directory: {e}")
+            self.logger.error(f"Failed to create backup directory: {e}")
             return False
 
     def _get_chrome_path(self) -> Optional[Path]:
@@ -33,7 +36,7 @@ class BrowserHistoryReader:
 
         path = paths.get(self.system)
         if not path or not path.exists():
-            logger.error(f"Chrome history path not found: {path}")
+            self.logger.error(f"Chrome history path not found: {path}")
             return None
         return path
 
@@ -73,12 +76,12 @@ class BrowserHistoryReader:
                 if data.get('Name').__contains__('default-release') and 'Path' in data:
                     profile_path = base_path / data['Path']
                     if (profile_path / 'places.sqlite').exists():
-                        logger.debug(f"Found Firefox profile: {profile_path}")
+                        self.logger.debug(f"Found Firefox profile: {profile_path}")
                         return profile_path
             return None
 
         except UnicodeDecodeError as e:
-            logger.error(f"Encoding error in {profiles_ini}: {e}")
+            self.logger.error(f"Encoding error in {profiles_ini}: {e}")
             return None
 
     def _read_sqlite(self, path: Path, query: str) -> List[Dict]:
@@ -90,10 +93,10 @@ class BrowserHistoryReader:
                 cursor.execute(query)
                 return [dict(row) for row in cursor.fetchall()]
         except sqlite3.OperationalError as e:
-            logger.error(f"Database error: {e}")
+            self.logger.error(f"Database error: {e}")
             return []
         except Exception as e:
-            logger.error(f"Unexpected error reading {path}: {e}")
+            self.logger.error(f"Unexpected error reading {path}: {e}")
             return []
 
     def get_chrome_history(self, max_results: int = 99999) -> List[Dict]:
@@ -120,7 +123,7 @@ class BrowserHistoryReader:
 
         path = profile_dir / 'places.sqlite' if profile_dir.is_dir() else profile_dir
         if not path.exists():
-            logger.error(f"Firefox history file not found: {path}")
+            self.logger.error(f"Firefox history file not found: {path}")
             return []
 
         query = f"""
@@ -133,25 +136,16 @@ class BrowserHistoryReader:
 
         return self._read_sqlite(path, query)
 
-    def _create_backup_dir(self) -> bool:
-        """Create backup directory if it doesn't exist"""
-        try:
-            self.backup_dir.mkdir(parents=True, exist_ok=True)
-            return True
-        except Exception as e:
-            logger.error(f"Failed to create backup directory: {e}")
-            return False
-
     def _clean_old_backups(self, browser_name: str) -> None:
         """Delete previous backups for the specified browser"""
         try:
             pattern = f"{browser_name.lower()}_history.*"
-            for old_file in self.backup_dir.glob(pattern):
+            for old_file in self.app_settings.BACKUP_DIR.glob(pattern):
                 if old_file.is_file():
                     old_file.unlink()
-                    logger.debug(f"Deleted old backup: {old_file}")
+                    self.logger.debug(f"Deleted old backup: {old_file}")
         except Exception as e:
-            logger.error(f"Failed to clean old backups: {e}")
+            self.logger.error(f"Failed to clean old backups: {e}")
 
     def backup_history(self, history_data: List[Dict], browser_name: str) -> Optional[Path]:
         """
@@ -159,7 +153,7 @@ class BrowserHistoryReader:
         Returns path to backup directory if successful
         """
         if not history_data:
-            logger.warning(f"No {browser_name} history to backup")
+            self.logger.warning(f"No {browser_name} history to backup")
             return None
 
         if not self._create_backup_dir():
@@ -177,7 +171,7 @@ class BrowserHistoryReader:
                 pass
 
             # JSON Backup
-            json_path = self.backup_dir / f"{base_name}.json"
+            json_path = self.app_settings.BACKUP_DIR / f"{base_name}.json"
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(history_data, f, indent=2, ensure_ascii=False)
             '''
@@ -189,11 +183,11 @@ class BrowserHistoryReader:
                 writer.writerows(history_data)
             '''
 
-            logger.info(f"Backup created at {self.backup_dir}\n")
+            self.logger.info(f"Backup created at {self.backup_dir}\n")
             return self.backup_dir
 
         except Exception as e:
-            logger.error(f"Backup failed: {e}")
+            self.logger.error(f"Backup failed: {e}")
             return None
 
 

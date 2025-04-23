@@ -1,0 +1,43 @@
+{# DaisyUI Toast Container - position classes adjust placement #}
+<div class="toast toast-top toast-end z-50"> {# z-50 ensures it's above most content #}
+    {% for message in messages %}
+        {# Map Django message tags to DaisyUI alert types #}
+        {% with alert_type=message.tags|default:'info' %}
+            <div class="alert
+                {% if alert_type == 'success' %} alert-success
+                {% elif alert_type == 'error' %} alert-error
+                {% elif alert_type == 'warning' %} alert-warning
+                {% else %} alert-info {% endif %}
+                shadow-lg">
+                <div class="flex-1">
+                     {# Optional: Add icons based on type #}
+                    {% if alert_type == 'success' %} <i class="bi bi-check-circle-fill"></i>
+                    {% elif alert_type == 'error' %} <i class="bi bi-x-octagon-fill"></i>
+                    {% elif alert_type == 'warning' %} <i class="bi bi-exclamation-triangle-fill"></i>
+                    {% else %} <i class="bi bi-info-circle-fill"></i>
+                    {% endif %}
+                    <span class="ml-2">{{ message }}</span>
+                </div>
+                 {# Optional: Add a close button (requires simple JS) #}
+                 {# <button class="btn btn-sm btn-ghost" onclick="this.closest('.alert').remove()">✕</button> #}
+            </div>
+        {% endwith %}
+    {% endfor %}
+</div>
+
+{# Optional: Add JS to auto-hide toasts after a delay #}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toasts = document.querySelectorAll('.toast > .alert');
+        toasts.forEach((toast, index) => {
+            // Don't auto-hide errors? Or hide them slower?
+            const delay = toast.classList.contains('alert-error') ? 8000 : 5000;
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.5s ease-out';
+                toast.style.opacity = '0';
+                // Remove the element after the transition
+                setTimeout(() => toast.remove(), 500);
+            }, delay + index * 100); // Stagger appearance slightly
+        });
+    });
+</script>

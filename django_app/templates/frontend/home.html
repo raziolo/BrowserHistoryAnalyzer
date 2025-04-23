@@ -1,16 +1,242 @@
 {% extends 'frontend/base.html' %}
-{% load static %}
 
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="row g-4">
-    <div class="col-12">
-        <h1 class="h3 mb-0 text-gray-800">Dashboard Overview</h1>
+{# Main content grid #}
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+
+    {# Page Title - Spanning full width potentially, or placed above grid #}
+    <div class="col-span-1 lg:col-span-2 xl:col-span-3 mb-2">
+        <h1 class="text-2xl font-bold text-base-content">Dashboard Overview</h1>
     </div>
 
+    {# Backup Card Include #}
+    {# Assuming backup_card.html now uses col-span-1 #}
     {% include 'components/dashboard/backup_card.html' with backup_card_data=backup_card_data %}
 
 
+    {# Remaining Cards - place them in the grid #}
+    {# Chrome Summary Card #}
+    <div class="col-span-1">
+        <div class="card bg-base-100 shadow-lg h-full">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <div class="flex items-center text-base-content/80">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Chrome_icon_%28September_2014%29.svg/640px-Google_Chrome_icon_%28September_2014%29.svg.png" alt="Chrome Icon" class="mr-2 w-5 h-5">
+                    <span>Chrome Summary</span>
+                    </div>
+                </h2>
+                <p class="text-sm text-base-content/80">Total History Entries: <span class="font-semibold">{{ dashboard_data.total_entries.chrome|default:0 }}</span></p> {# Example: Use actual variable #}
+                <h3 class="font-semibold mt-1 mb-1">Top Categories:</h3>
+                <ul class="text-sm space-y-1">
+                    {% for category, value in dashboard_data.chrome_category_data|slice:":5" %}
+                    <li class="flex justify-between items-center">
+                        <span>{{ category }}</span>
+                        <span class="badge badge-primary badge-sm">{{ value }}</span>
+                    </li>
+                {% empty %}
+                    <li>No category data available.</li>
+                {% endfor %}
+
+                </ul>
+                <div class="card-actions justify-end mt-auto pt-2">
+                     <p class="text-xs text-base-content/60">Top 5 categories shown.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Chrome Summary Card #}
+    <div class="col-span-1">
+        <div class="card bg-base-100 shadow-lg h-full">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <div class="flex items-center text-base-content/80">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Mozilla_Firefox_logo_2013.svg/640px-Mozilla_Firefox_logo_2013.svg.png" alt="Firefox Icon" class="mr-2 w-5 h-5">
+                    <span>Firefox Summary</span>
+                    </div>
+                </h2>
+                <p class="text-sm text-base-content/80">Total History Entries: <span class="font-semibold">{{ dashboard_data.total_entries.chrome|default:0 }}</span></p> {# Example: Use actual variable #}
+                <h3 class="font-semibold mt-1 mb-1">Top Categories:</h3>
+                <ul class="text-sm space-y-1">
+                    {% for category, value in dashboard_data.firefox_category_data|slice:":5" %}
+                    <li class="flex justify-between items-center">
+                        <span>{{ category }}</span>
+                        <span class="badge badge-primary badge-sm">{{ value }}</span>
+                    </li>
+                {% empty %}
+                    <li>No category data available.</li>
+                {% endfor %}
+
+                </ul>
+                <div class="card-actions justify-end mt-auto pt-2">
+                     <p class="text-xs text-base-content/60">Top 5 categories shown.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Chrome Recent History Card #}
+    <div class="col-span-1 lg:col-span-1"> {# Adjust span if needed #}
+        <div class="card bg-base-100 shadow-lg h-full flex flex-col">
+            <div class="card-body pb-0">
+                <h2 class="card-title mb-2"><i class="bi bi-arrow-clockwise mr-2 text-blue-500"></i>Recent Chrome Activity</h2>
+            </div>
+            {# Use overflow-y-auto on a container *inside* card-body if possible, or adjust padding #}
+            <div class="px-6 py-2 scrollable-list flex-grow"> {# Custom class for scrolling #}
+                <ul class="space-y-3">
+                    {% for item in dashboard_data.recent_history.chrome %}
+                     <li class="border-b border-base-300 pb-2 last:border-b-0">
+                         <div class="flex justify-between items-start mb-1">
+                            <h4 class="text-sm font-semibold truncate mr-2 flex-grow">
+                                <a href="{{ item.url }}" target="_blank" class="link link-hover" title="{{ item.title }}">
+                                    {{ item.title|truncatechars:50 }} <i class="bi bi-box-arrow-up-right text-xs"></i>
+                                </a>
+                            </h4>
+                            <small class="text-xs text-base-content/60 flex-shrink-0 whitespace-nowrap">{{ item.timestamp|date:"M d, H:i" }}</small>
+                         </div>
+                         <div class="flex justify-between items-center text-xs">
+                             <span class="badge badge-info badge-outline badge-xs">{{ item.category|default:'Uncategorized' }}</span>
+                             <span class="text-base-content/60">Visits: {{ item.visits }}</span>
+                         </div>
+                     </li>
+                     {% empty %}
+                        <li>No recent Chrome history.</li>
+                     {% endfor %}
+
+                </ul>
+            </div>
+             <div class="card-body pt-0 pb-4">
+            </div>
+        </div>
+    </div>
+
+    {# Chrome Recent History Card #}
+    <div class="col-span-1 lg:col-span-1"> {# Adjust span if needed #}
+        <div class="card bg-base-100 shadow-lg h-full flex flex-col">
+            <div class="card-body pb-0">
+                <h2 class="card-title"><i class="bi bi-arrow-clockwise mr-2 text-orange-500"></i>Recent Firefox Activity</h2>
+            </div>
+            {# Use overflow-y-auto on a container *inside* card-body if possible, or adjust padding #}
+            <div class="px-6 py-2 scrollable-list flex-grow"> {# Custom class for scrolling #}
+                <ul class="space-y-3">
+                    {% for item in dashboard_data.recent_history.chrome %}
+                     <li class="border-b border-base-300 pb-2 last:border-b-0">
+                         <div class="flex justify-between items-start mb-1">
+                            <h4 class="text-sm font-semibold truncate mr-2 flex-grow">
+                                <a href="{{ item.url }}" target="_blank" class="link link-hover" title="{{ item.title }}">
+                                    {{ item.title|truncatechars:50 }} <i class="bi bi-box-arrow-up-right text-xs"></i>
+                                </a>
+                            </h4>
+                            <small class="text-xs text-base-content/60 flex-shrink-0 whitespace-nowrap">{{ item.timestamp|date:"M d, H:i" }}</small>
+                         </div>
+                         <div class="flex justify-between items-center text-xs">
+                             <span class="badge badge-info badge-outline badge-xs">{{ item.category|default:'Uncategorized' }}</span>
+                             <span class="text-base-content/60">Visits: {{ item.visits }}</span>
+                         </div>
+                     </li>
+                     {% empty %}
+                        <li>No recent Chrome history.</li>
+                     {% endfor %}
+
+                </ul>
+            </div>
+             <div class="card-body pt-0 pb-4">
+            </div>
+        </div>
+    </div>
+
+    {# LMStudio Endpoint PING History Card #}
+<div class="col-span-1 lg:col-span-1">
+    <div class="card bg-base-100 shadow-lg h-full border border-base-200 hover:shadow-xl transition-shadow duration-300">
+        <div class="card-body">
+            <h2 class="card-title">
+                <div class="flex items-center gap-2">
+                    <img src="https://lmstudio.ai/_next/static/media/lmstudio-app-logo.61cb7d80.webp"
+                         alt="LMStudio Logo"
+                         class="w-6 h-6 rounded-full">
+                    <span class="text-lg font-semibold">LMStudio Endpoint</span>
+                </div>
+            </h2>
+
+            <div class="divider my-2"></div>
+
+            {% if lm_studio.ping %}
+                <!-- Active Connection State -->
+                <div class="space-y-4">
+                    <!-- Ping Status -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-success animate-pulse"></div>
+                            <span>Connection Status</span>
+                        </div>
+                        <span class="badge badge-success gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Active ({{ lm_studio.ping_time }}ms)
+                        </span>
+                    </div>
+
+                    <!-- Available Models -->
+                    <div>
+                        <h3 class="font-medium mb-2">Loaded Models</h3>
+                        <div class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                            {% for model in lm_studio.model_list %}
+                            <div class="flex items-center justify-between p-2 bg-base-200 rounded-lg hover:bg-base-300 transition-colors">
+                                <div class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    <span class="font-mono text-sm">{{ model.id }}</span>
+                                </div>
+                                <span class="text-xs opacity-70">{{ model.owned_by }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Last Activity -->
+                    <div class="text-xs text-base-content/60 mt-2">
+                        Last active: {{ lm_studio.last_active|default:"Just now" }}
+                    </div>
+                </div>
+            {% else %}
+                <!-- Inactive Connection State -->
+                <div class="flex flex-col items-center justify-center py-8 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-error mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="font-medium mb-1">Endpoint Unavailable</h3>
+                    <p class="text-sm text-base-content/60 mb-4">LMStudio server is not responding</p>
+                    <button class="btn btn-sm btn-primary gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Retry Connection
+                    </button>
+                </div>
+            {% endif %}
+
+            <div class="card-actions justify-end mt-4">
+                <div class="text-xs text-base-content/40">
+                    v{{ lm_studio.version|default:"1.0.0" }}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+    {# Data Generation Footer - Spanning full width #}
+    <div class="col-span-1 lg:col-span-2 xl:col-span-3 mt-4">
+        <footer class="text-center text-base-content/60 text-sm">
+             Data generated on: {{ generation_time|date:"Y-m-d H:i:s"|default:"N/A" }} {# Example: Use actual variable #}
+             {# Static Fallback #}
+             {# Data generated on: 2025-04-23 10:28:14 #}
+        </footer>
+    </div>
+
+</div> {# End main content grid #}
+
 {% endblock %}

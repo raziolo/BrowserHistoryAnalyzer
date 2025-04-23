@@ -1,0 +1,94 @@
+<!-- settings.html -->
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Classifier Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-2xl mb-6">
+                <i class="bi bi-gear-fill mr-2"></i>
+                Classifier Configuration
+            </h2>
+
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Days to Analyze -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">{{ form.days_to_analyze.label }}</span>
+                    </label>
+                    <input type="number"
+                           name="{{ form.days_to_analyze.name }}"
+                           value="{{ form.days_to_analyze.value }}"
+                           class="input input-bordered w-full"
+                           min="{{ form.days_to_analyze.field.min_value }}"
+                           max="{{ form.days_to_analyze.field.max_value }}">
+                    <div class="text-sm text-base-content/60 mt-2">
+                        {{ form.days_to_analyze.help_text }}
+                    </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">{{ form.categories.label }}</span>
+                    </label>
+                    <textarea name="{{ form.categories.name }}"
+                              class="textarea textarea-bordered h-48"
+                              placeholder="Enter one category per line">{{ form.categories.value }}</textarea>
+                    <div class="text-sm text-base-content/60 mt-2">
+                        {{ form.categories.help_text }}
+                    </div>
+                </div>
+
+                <!-- Model Parameters -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Temperature -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">{{ form.temperature.label }}</span>
+                        </label>
+                        <input type="number"
+                               name="{{ form.temperature.name }}"
+                               value="{{ form.temperature.value }}"
+                               step="0.1"
+                               class="input input-bordered"
+                               min="{{ form.temperature.field.min_value }}"
+                               max="{{ form.temperature.field.max_value }}">
+                        <div class="text-sm text-base-content/60 mt-2">
+                            {{ form.temperature.help_text }}
+                        </div>
+                    </div>
+
+                    <!-- Max Tokens -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">{{ form.max_tokens.label }}</span>
+                        </label>
+                        <input type="number"
+                               name="{{ form.max_tokens.name }}"
+                               value="{{ form.max_tokens.value }}"
+                               class="input input-bordered"
+                               min="{{ form.max_tokens.field.min_value }}"
+                               max="{{ form.max_tokens.field.max_value }}">
+                        <div class="text-sm text-base-content/60 mt-2">
+                            {{ form.max_tokens.help_text }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-actions justify-end mt-8">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save-fill mr-2"></i>
+                        Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
