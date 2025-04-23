@@ -56,10 +56,10 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
    - Ensure the local API is running at `http://localhost:1234/v1`  
 
 5. ## 🤠 Run Django App
-```bash
-python ./django_app/run_django_frontend.py
-```
----
+   ```bash
+   python ./django_app/run_django_frontend.py
+   ```
+   ---
 
 ## 🛠 **How It Works**  
 
