@@ -55,12 +55,10 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
    - Load your preferred model (e.g., `granite-3.1-8b-instruct`)  
    - Ensure the local API is running at `http://localhost:1234/v1`  
 
-5. **Run the app**  
-   ```bash
-   python main.py # when done run `deactivate` or close the terminal
-   ```
-   
-
+5. ## 🤠 Run Django App
+```bash
+python ./django_app/run_django_frontend.py
+```
 ---
 
 ## 🛠 **How It Works**  
@@ -96,11 +94,6 @@ AI_MODEL_NAME = "granite-3.1-8b-instruct"  # Override directly
 # ** Classification Parameters **
 DAYS_TO_ANALYZE = 31  # Number of last days to analyze
 ```
-
-### 🤠 Run Django App
-```bash
-python ./django_app/run_django_frontend.py
-``` 
 
 ## 🛠 Customization Guide
 
