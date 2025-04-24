@@ -1,0 +1,153 @@
+<!-- frontend/settings.html -->
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Classifier Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+
+
+
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title text-2xl mb-6">
+                <i class="bi bi-gear-fill mr-2"></i>
+                Classifier Configuration
+            </h2>
+
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Days to Analyze -->
+                <div class="form-control">
+                    <label class="label" for="{{ form.days_to_analyze.id_for_label }}">
+                        <span class="label-text">{{ form.days_to_analyze.label }}</span>
+                    </label>
+                    {{ form.days_to_analyze }}
+                    {% if form.days_to_analyze.help_text %}
+                    <div class="text-sm text-base-content/60 mt-1">
+                        {{ form.days_to_analyze.help_text }}
+                    </div>
+                    {% endif %}
+                    {% if form.days_to_analyze.errors %}
+                    <div class="text-error text-sm mt-1">
+                        {{ form.days_to_analyze.errors|striptags }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Current Categories (Read-Only Bubbles) -->
+                 <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-semibold">Current Categories</span>
+                        <span class="label-text-alt text-base-content/60">Displayed after saving</span>
+                    </label>
+                    <div class="flex flex-wrap gap-2 p-3 border border-base-300 bg-base-200 rounded-lg min-h-[48px]">
+                        {% if current_categories %}
+                            {% for category in current_categories %}
+                                <span class="badge badge-neutral badge-lg">{{ category }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-sm text-base-content/60 italic px-2">No categories saved yet. Add them below.</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Divider (Optional) -->
+                <div class="divider my-1">Edit Below</div>
+
+                <!-- Categories Input/Edit -->
+                <div class="form-control">
+                    <label class="label" for="{{ form.categories.id_for_label }}">
+                        <span class="label-text">{{ form.categories.label }}</span>
+                    </label>
+                    {{ form.categories }} {# Renders the textarea #}
+                     <div class="text-sm text-base-content/60 mt-1">
+                         {{ form.categories.help_text }} <br>
+                         <span class="font-semibold">Add or remove categories here (one per line). Click "Save Settings" to update the bubbles above.</span>
+                    </div>
+                     {% if form.categories.errors %}
+                    <div class="text-error text-sm mt-1">
+                        {{ form.categories.errors|striptags }}
+                    </div>
+                    {% endif %}
+                </div>
+
+
+                <!-- Model Parameters -->
+                <h3 class="text-lg font-semibold mt-4 pt-4 border-t border-base-300">Language Model Settings</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Current Model Selection -->
+
+                    <!-- Temperature -->
+                    <div class="form-control">
+                        <label class="label" for="{{ form.temperature.id_for_label }}">
+                            <span class="label-text">{{ form.temperature.label }}</span>
+                        </label>
+                         {{ form.temperature }}
+                         {% if form.temperature.help_text %}
+                        <div class="text-sm text-base-content/60 mt-1">
+                            {{ form.temperature.help_text }}
+                        </div>
+                         {% endif %}
+                         {% if form.temperature.errors %}
+                        <div class="text-error text-sm mt-1">
+                            {{ form.temperature.errors|striptags }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Max Tokens -->
+                    <div class="form-control md:col-start-2"> {# Align under Temperature if desired #}
+                        <label class="label" for="{{ form.max_tokens.id_for_label }}">
+                            <span class="label-text">{{ form.max_tokens.label }}</span>
+                        </label>
+                        {{ form.max_tokens }}
+                         {% if form.max_tokens.help_text %}
+                        <div class="text-sm text-base-content/60 mt-1">
+                            {{ form.max_tokens.help_text }}
+                        </div>
+                         {% endif %}
+                         {% if form.max_tokens.errors %}
+                        <div class="text-error text-sm mt-1">
+                            {{ form.max_tokens.errors|striptags }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-control col-span-2">
+                        <label class="label" for="{{ form.current_model.id_for_label }}">
+                            <span class="label-text">{{ form.current_model.label }}</span>
+                        </label>
+                         {{ form.current_model }} {# Renders the select dropdown #}
+                         {% if form.current_model.help_text %}
+                        <div class="text-sm text-base-content/60 mt-1">
+                            {{ form.current_model.help_text }}
+                        </div>
+                         {% endif %}
+                         {% if form.current_model.errors %}
+                        <div class="text-error text-sm mt-1">
+                            {{ form.current_model.errors|striptags }}
+                        </div>
+                        {% endif %}
+                         {% if model_fetch_error %}
+                         <div class="text-warning text-sm mt-1">
+                             Note: {{ model_fetch_error }}
+                         </div>
+                         {% endif %}
+                    </div>
+
+                </div>
+
+                <div class="card-actions justify-end mt-8">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save-fill mr-2"></i>
+                        Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

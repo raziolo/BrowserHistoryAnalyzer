@@ -5,8 +5,8 @@ visualization/output
 .idea
 .venv
 it_surely_already_exists.txt
-django_app/db.sqlite3
-django_app/staticfiles
+db.sqlite3
+staticfiles
 
 # Byte-compiled / optimized / DLL files
 __pycache__

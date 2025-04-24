@@ -99,7 +99,7 @@ DAYS_TO_ANALYZE = 31  # Number of last days to analyze
 
 ### 🤠 Run Django App
 ```bash
-python ./django_app/run_django_frontend.py
+python run_django_frontend.py
 ``` 
 
 ## 🛠 Customization Guide

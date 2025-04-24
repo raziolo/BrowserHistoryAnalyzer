@@ -3,6 +3,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 
+import requests
 from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -13,12 +14,15 @@ from backupManager.main import BrowserHistoryReader
 from classifier.main import HistoryClassifier
 from .models import App_Settings, HistoryEvent
 from main import setup_backup
-from django_app.HistoryApp import app_settings
+from HistoryApp import app_settings
 from django.shortcuts import render, redirect
-from .forms import ClassifierSettingsForm
+from .forms import SettingsForm
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from typing import Dict, List
+
+logger = app_settings.LOGGER
+
 
 
 def get_category_distribution(browser: str) -> Dict[str, int]:
@@ -74,9 +78,15 @@ def home(request):
 def make_lm_studio_ping(request):
     # make a request to 127.0.0.1:7860/v1
     import requests
-
-    response = requests.get('http://127.0.0.1:1234/v1/models')
-
+    try:
+        response = requests.get('http://127.0.0.1:1234/v1/models')
+    except Exception as e:
+        logging.error(f"Error pinging LM Studio: {e}")
+        return {
+            'ping': False,
+            'ping_time': 0,
+            'model_list': []
+        }
     return {
         'ping' : True if response.status_code == 200 else False,
         'ping_time' : response.elapsed.total_seconds(),
@@ -196,7 +206,7 @@ def make_backup(request):
     return redirect('home')
 
 def set_classification_status_complete():
-    App_Settings.objects.update(name='classification_status', value='Complete')
+    App_Settings.objects.filter(name='classification_status').update(value='Completed')
     return 0
 
 def start_classification_with_callback(request, callback):
@@ -261,10 +271,7 @@ def classification(request):
                          args=(request, set_classification_status_complete),
                          daemon=True).start()
 
-        App_Settings.objects.update(
-            name='classification_status',
-            value='In progress',
-        )
+        App_Settings.objects.filter(name='classification_status').update(value='In progress')
         time.sleep(2) # Attendi un attimo per assicurarti che il thread di classificazione sia avviato
         # Torni subito questa risposta JSON
         return redirect('classification')
@@ -312,7 +319,7 @@ def classification_status(request):
     # Check if the classification is complete
     if data['remaining'] == 0:
         # Update the status in the database
-        App_Settings.objects.update(name='classification_status', value='Complete')
+        App_Settings.objects.filter(name='classification_status').update(value='Completed')
         # Create empty response with redirect header
         response = HttpResponse()
         response['HX-Redirect'] = reverse('classification')
@@ -341,53 +348,152 @@ class HistoryEventListView(SingleTableView):
     def get_queryset(self):
         return super().get_queryset().order_by('-visit_count')
 
+def get_setting(name, default_value):
+    """Helper function to get a setting value or return a default."""
+    try:
+        setting = App_Settings.objects.get(name=name)
+        return setting.value # JSONField returns the python object
+    except App_Settings.DoesNotExist:
+        return default_value
+    except (json.JSONDecodeError, TypeError): # Handle potential issues if value isn't valid JSON or expected type
+        logger.warning(f"Could not decode setting '{name}'. Returning default.")
+        return default_value
+
+def fetch_available_models():
+    """Fetches the list of available models from LM Studio API."""
+    api_url = 'http://127.0.0.1:1234/v1/models'
+    model_list = []
+    error_message = None
+    try:
+        # Increased timeout for potentially slow API
+        response = requests.get(api_url, timeout=10)
+        response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)
+
+        data = response.json()
+        if 'data' in data and isinstance(data['data'], list):
+            # Extract model IDs - assuming each item in 'data' is a dict with an 'id' key
+            model_list = [{'id': model.get('id')}
+                          for model in data['data'] if model.get('id')]
+            if not model_list:
+                error_message = "API returned empty model list."
+                logger.warning(f"LM Studio API ({api_url}) returned empty or invalid model list structure.")
+        else:
+            error_message = "Invalid response format from API."
+            logger.error(f"Invalid response format from LM Studio API ({api_url}): {data}")
+
+    except requests.exceptions.ConnectionError:
+        error_message = "Could not connect to LM Studio API. Is it running?"
+        logger.error(f"ConnectionError connecting to LM Studio API ({api_url}).")
+    except requests.exceptions.Timeout:
+        error_message = "Connection to LM Studio API timed out."
+        logger.error(f"Timeout connecting to LM Studio API ({api_url}).")
+    except requests.exceptions.RequestException as e:
+        error_message = f"Error fetching models: {e}"
+        logger.error(f"Error fetching models from LM Studio API ({api_url}): {e}")
+    except (json.JSONDecodeError, KeyError) as e:
+         error_message = "Error parsing API response."
+         logger.error(f"Error parsing LM Studio API ({api_url}) response: {e}")
+
+    return model_list, error_message
+
+
 def settings_view(request):
+    # Fetch available models and potential error message
+    available_models, model_fetch_error = fetch_available_models()
 
+    # Create choices for the form field (list of tuples)
+    # Use model['id'] for both value and display text
+    model_choices = [('', '--- Select a Model ---')] # Add a default empty choice
+    model_choices.extend((model['id'], model['id']) for model in available_models)
 
-    # Get current settings
-    settings = {
-        'days_to_analyze': 5,
-        'categories': [],
+    # Define defaults
+    defaults = {
+        'days_to_analyze': 7,
         'temperature': 0.1,
-        'max_tokens': 1000
+        'max_tokens': 1000,
+        'categories': [
+            "Social Media", "News", "Technology", "Shopping", "Education"
+        ],
+        'current_model': None # Default for the new setting
     }
 
-    # Load from database if available
-    try:
-        settings['days_to_analyze'] = int(App_Settings.objects.get(name='DAYS_TO_ANALYZE').value)
-        params = json.loads(App_Settings.objects.get(name='CLASSIFICATION_PARAMETERS').value)
-        settings.update(params)
-    except App_Settings.DoesNotExist:
-        pass
-
     if request.method == 'POST':
-        form = ClassifierSettingsForm(request.POST)
+        # Pass dynamic choices to the form during POST validation
+        form = SettingsForm(request.POST, model_choices=model_choices)
         if form.is_valid():
-            # Save settings to database
-            App_Settings.objects.update_or_create(
-                name='DAYS_TO_ANALYZE',
-                defaults={'value': str(form.cleaned_data['days_to_analyze'])}
-            )
+            cleaned_data = form.cleaned_data
+            categories_list = cleaned_data['categories'] # Already a list
 
-            params = {
-                'categories': form.cleaned_data['categories'],
-                'temperature': form.cleaned_data['temperature'],
-                'max_tokens': form.cleaned_data['max_tokens']
+            # Save settings using update_or_create
+            App_Settings.objects.update_or_create(
+                name='days_to_analyze',
+                defaults={'value': cleaned_data['days_to_analyze']}
+            )
+            App_Settings.objects.update_or_create(
+                name='temperature',
+                defaults={'value': cleaned_data['temperature']}
+            )
+            App_Settings.objects.update_or_create(
+                name='max_tokens',
+                defaults={'value': cleaned_data['max_tokens']}
+            )
+            # Store the categories list directly as JSON
+            App_Settings.objects.update_or_create(
+                name='categories',
+                defaults={'value': categories_list}
+            )
+            # Update classification_parameters based on categories
+            classification_params = {
+                "categories": categories_list,
+                "Other": False # Or derive as needed
             }
-
             App_Settings.objects.update_or_create(
-                name='CLASSIFICATION_PARAMETERS',
-                defaults={'value': json.dumps(params, cls=DjangoJSONEncoder)}
+                name='classification_parameters',
+                defaults={'value': classification_params}
+            )
+            # Save the selected model
+            App_Settings.objects.update_or_create(
+                name='current_model',
+                defaults={'value': cleaned_data['current_model']} # Store the selected model ID
             )
 
-            return redirect('settings')
-    else:
-        initial_data = {
-            'days_to_analyze': settings['days_to_analyze'],
-            'categories': '\n'.join(settings['categories']),
-            'temperature': settings['temperature'],
-            'max_tokens': settings['max_tokens']
-        }
-        form = ClassifierSettingsForm(initial=initial_data)
+            messages.success(request, 'Settings updated successfully!')
+            return redirect('settings') # Use your actual URL name
+        else:
+            # Form is invalid, add error messages if needed (e.g., API error)
+             if model_fetch_error:
+                 messages.error(request, f"Could not refresh model list: {model_fetch_error}")
 
-    return render(request, 'frontend/settings.html', {'form': form})
+    else: # GET Request
+        # Load initial data from the database
+        initial_data = {
+            'days_to_analyze': get_setting('days_to_analyze', defaults['days_to_analyze']),
+            'temperature': get_setting('temperature', defaults['temperature']),
+            'max_tokens': get_setting('max_tokens', defaults['max_tokens']),
+            'current_model': get_setting('current_model', defaults['current_model']), # Load current model
+        }
+        current_categories_list = get_setting('categories', defaults['categories'])
+        if isinstance(current_categories_list, list):
+             initial_data['categories'] = "\n".join(current_categories_list)
+        else:
+             initial_data['categories'] = "\n".join(defaults['categories']) # Fallback
+
+        # Pass dynamic choices AND initial data to the form for GET
+        form = SettingsForm(initial=initial_data, model_choices=model_choices)
+
+        # Display error message if model fetching failed on GET
+        if model_fetch_error:
+            messages.warning(request, f"Could not fetch model list: {model_fetch_error}")
+
+
+    # Fetch current categories again for bubble display
+    current_categories_for_bubbles = get_setting('categories', defaults['categories'])
+    if not isinstance(current_categories_for_bubbles, list):
+        current_categories_for_bubbles = []
+
+    context = {
+        'form': form,
+        'current_categories': current_categories_for_bubbles,
+        'model_fetch_error': model_fetch_error # Pass error to template if needed for specific UI
+    }
+    return render(request, 'frontend/settings.html', context)

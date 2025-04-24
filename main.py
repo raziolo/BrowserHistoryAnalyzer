@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from backupManager.main import BrowserHistoryReader
 from classifier.main import HistoryClassifier
 
-from django_app.HistoryApp import app_settings
+from HistoryApp import app_settings
 
 logger = app_settings.LOGGER
 

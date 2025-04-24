@@ -98,7 +98,7 @@
                          </div>
                          <div class="flex justify-between items-center text-xs">
                              <span class="badge badge-info badge-outline badge-xs">{{ item.category|default:'Uncategorized' }}</span>
-                             <span class="text-base-content/60">Visits: {{ item.visits }}</span>
+                             <span class="text-base-content/60">Visits: {{ item.visit_count }}</span>
                          </div>
                      </li>
                      {% empty %}
@@ -133,7 +133,7 @@
                          </div>
                          <div class="flex justify-between items-center text-xs">
                              <span class="badge badge-info badge-outline badge-xs">{{ item.category|default:'Uncategorized' }}</span>
-                             <span class="text-base-content/60">Visits: {{ item.visits }}</span>
+                             <span class="text-base-content/60">Visits: {{ item.visit_count }}</span>
                          </div>
                      </li>
                      {% empty %}
