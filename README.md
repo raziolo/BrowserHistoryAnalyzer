@@ -55,12 +55,11 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
    - Load your preferred model (e.g., `granite-3.1-8b-instruct`)  
    - Ensure the local API is running at `http://localhost:1234/v1`  
 
-5. **Run the app**  
-   ```bash
-   python main.py # when done run `deactivate` or close the terminal
-   ```
-   
 
+4. 🤠 **Run Django App**
+   ```bash
+   python run_django_frontend.py
+   ``` 
 ---
 
 ## 🛠 **How It Works**  
@@ -84,53 +83,6 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
 - Daily activity timeline  
 - Recent browsing tables  
 
----
-## ⚙️ Configuration
-### All settings in `app_settings.py`:
-
-#### Model Selection
-```python
-AI_MODEL_N = 2  # 0-9,  index N of model in AI_MODELS list
-AI_MODEL_NAME = "granite-3.1-8b-instruct"  # Override directly
-
-# ** Classification Parameters **
-DAYS_TO_ANALYZE = 31  # Number of last days to analyze
-```
-
-### 🤠 Run Django App
-```bash
-python run_django_frontend.py
-``` 
-
-## 🛠 Customization Guide
-
-### 1. Adding New Models
-Edit `AI_MODELS` list:
-```python
-AI_MODELS = [
-    {'name': 'your-model-identifier', 'thinking': True or False},
-    ...
-]
-```
-
-### 2. Category Fine-Tuning
-Modify `CLASSIFICATION_PARAMETERS`:
-```python
-   "categories": [
-       "Social Media",
-       "News",
-       # ...add/remove as needed
-   ],
-   "temperature": 0.3  # Higher = more creative classifications ( Max 1.0)
-   "max_tokens": 2000  # Response length control, big number for thinking models
-```
-
-### 3. Backup Location
-```python
-BACKUP_DIR = Path("your/custom/path")  # Change backup storage
-```
-
-
 ## 📊 **Dashboard Overview**
 ![Dashboard Screenshot](https://i.ibb.co/7NyQNc8p/image.png)
 ---
@@ -148,7 +100,6 @@ BACKUP_DIR = Path("your/custom/path")  # Change backup storage
 ---
 
 
-
 ## ❓ **FAQs**  
 
 ### **Q: Does this work on Windows/Mac/Linux?**  
@@ -160,8 +111,6 @@ BACKUP_DIR = Path("your/custom/path")  # Change backup storage
 ### **Q: Where is my data stored?**  
 📂 All files are kept locally:  
 - Backups → `backupManager/history_backups/`  
-- Classified data → `classified/classified_history.db`  
-- Dashboard → `visualization/output/browsing_dashboard.html`
 
 ---
 
