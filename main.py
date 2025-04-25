@@ -18,13 +18,15 @@ def setup_backup() -> bool:
 
         # Check if backups exist
         backups = list(app_settings.BACKUP_DIR.glob("*_history.json"))
+        print(app_settings.BACKUP_DIR)
         if not backups:
-            print("No backups found - creating new ones...")
+            print("No backups found")
             return True
 
         # Check backup freshness (max 1 day old)
         latest_backup = max(backups, key=lambda f: f.stat().st_mtime)
         backup_age = datetime.now() - datetime.fromtimestamp(latest_backup.stat().st_mtime)
+        print(f"Latest backup: {latest_backup.name} - Age: {backup_age.days} days")
         return backup_age.days >= 1
 
     except Exception as e:
@@ -79,10 +81,6 @@ def main():
         logging.error(f"Classification failed: {e}")
         return
 
-    print("\nGenerating dashboard...")
-    visualizer = HistoryVisualizer()
-    dashboard_path = visualizer.generate_dashboard()
-    print(f"Dashboard generated at: {dashboard_path}")
 
 
 if __name__ == "__main__":

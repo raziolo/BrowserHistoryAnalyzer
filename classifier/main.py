@@ -8,7 +8,7 @@ from typing import List, Dict, Optional
 from openai import OpenAI
 from datetime import datetime
 from HistoryApp import app_settings
-from frontend.models import HistoryEvent
+from frontend.models import App_Settings
 
 # AI model name from settings.py
 
@@ -18,7 +18,7 @@ logger = app_settings.LOGGER
 class HistoryClassifier:
     def __init__(self, model_name: str = "local-model", base_url: str = "http://localhost:1234/v1"):
         self.client = OpenAI(base_url=base_url, api_key="not-needed")
-        self.model_name = app_settings.AI_MODEL_NAME
+        self.model_name = App_Settings.objects.get(name='current_model').value
         self.model_thinking = app_settings.AI_MODEL_THINKING
         self.backup_dir = app_settings.BACKUP_DIR
         self.status = {}
@@ -127,8 +127,6 @@ class HistoryClassifier:
                 "remaining": num_entries - processed
             }
 
-        # reset status
-        self.status = {}
 
 
         return results

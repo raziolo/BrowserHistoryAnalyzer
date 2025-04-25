@@ -206,14 +206,14 @@ def make_backup(request):
     return redirect('home')
 
 def set_classification_status_complete():
-    App_Settings.objects.filter(name='classification_status').update(value='Completed')
+    App_Settings.objects.filter(name='classification_status').update(value=1)
     return 0
 
 def start_classification_with_callback(request, callback):
-    start_classification(request)
+    start_classification()
     callback()
 
-def start_classification(request):
+def start_classification():
     global classifier
     # Date range setup
     end_date = datetime.now()
@@ -266,30 +266,35 @@ def start_classification(request):
 
 def classification(request):
     if request.method == 'POST':
+        # has selected model in settings
+        current_model = App_Settings.objects.get(name='current_model').value
+        # Check if the model is set
+        if not current_model:
+            messages.error(request, "No model selected in settings.")
+            return redirect('settings')
+
         # Avvia la classification in background
         threading.Thread(target=start_classification_with_callback,
                          args=(request, set_classification_status_complete),
                          daemon=True).start()
 
-        App_Settings.objects.filter(name='classification_status').update(value='In progress')
+        App_Settings.objects.filter(name='classification_status').update(value=0)
         time.sleep(2) # Attendi un attimo per assicurarti che il thread di classificazione sia avviato
         # Torni subito questa risposta JSON
         return redirect('classification')
 
     can_start_classification = None
     try:
-        classification_status = App_Settings.objects.get(name='classification_status').value
-        if classification_status == 'In progress':
+        status = App_Settings.objects.get(name='classification_status').value
+        if status == 0:
             can_start_classification = False
-        elif classification_status == 'Completed':
+        elif status == 1:
             can_start_classification = True
-        else:
-            can_start_classification = True
-    except App_Settings.DoesNotExist:
-        pass # Handle the case where the setting does not exist
     except Exception as e:
         logging.error(f"Error retrieving classification status: {e}")
         can_start_classification = True
+
+    print(can_start_classification)
 
     latest_backup = get_latest_backup_date()
 
@@ -315,15 +320,6 @@ def classification_status(request):
         'progress': int((status.get('processed', 0) / max(1, status.get('total', 1))) * 100) if status.get('total', 0) > 0 else 0,
         'browser': status.get('browser', 'Unknown'),
     }
-
-    # Check if the classification is complete
-    if data['remaining'] == 0:
-        # Update the status in the database
-        App_Settings.objects.filter(name='classification_status').update(value='Completed')
-        # Create empty response with redirect header
-        response = HttpResponse()
-        response['HX-Redirect'] = reverse('classification')
-        return response
 
     return render(request, 'components/progress.html', data)
 
