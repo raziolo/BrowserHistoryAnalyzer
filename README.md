@@ -131,9 +131,23 @@ BACKUP_DIR = Path("your/custom/path")  # Change backup storage
 ```
 
 
-## 📊 **Django Dashboard Overview**
+## 📊 **Dashboard Overview**
 ![Dashboard Screenshot](https://i.ibb.co/7NyQNc8p/image.png)
 ---
+
+## 📊 **Classification Overview**
+![Dashboard Screenshot](https://i.ibb.co/7NyQNc8p/image.png)
+---
+
+## 📅 **History Overview**
+![History Screenshot](https://i.ibb.co/KcpR2rwr/image.png)
+---
+
+## 🛠 **Settings Overview**
+![Settings Screenshot](https://i.ibb.co/KcpR2rwr/image.png)
+---
+
+
 
 ## ❓ **FAQs**  
 
