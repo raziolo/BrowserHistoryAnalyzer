@@ -23,7 +23,11 @@ from typing import Dict, List
 
 logger = app_settings.LOGGER
 
-
+def reset_classification_status(request):
+    """Reset the classification status to 'Complete'."""
+    App_Settings.objects.filter(name='classification_status').update(value=1)
+    messages.success(request, "Classification status reset to complete.")
+    return redirect('classification')
 
 def get_category_distribution(browser: str) -> Dict[str, int]:
     from django.db.models import Count
@@ -50,7 +54,7 @@ def get_daily_visits(browser: str) -> List[Dict]:
     return list(qs)
 
 
-def get_recent_history(browser: str, limit: int = 10) -> List[Dict]:
+def get_recent_history(browser: str, limit: int = 20) -> List[Dict]:
     qs = HistoryEvent.objects.filter(browser=browser.lower()) \
              .order_by('-last_visit') \
              .values('url', 'title', 'category', 'last_visit', 'visit_count')[:limit]
@@ -156,7 +160,6 @@ def dashboard_context(request):
 
     # Prepare chart data
     chart_data = {
-
         'timeline_labels': sorted(
             list({entry['day'] for entry in timeline_data['chrome'] + timeline_data['firefox']})),
         'chrome_timeline': [entry['count'] for entry in timeline_data['chrome']],
@@ -217,7 +220,10 @@ def start_classification():
     global classifier
     # Date range setup
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=app_settings.DAYS_TO_ANALYZE)
+    # Get the number of days to analyze from settings
+    days_to_analyze = App_Settings.objects.get(name='days_to_analyze').value
+    start_date = end_date - timedelta(days= days_to_analyze)
+    print(days_to_analyze)
 
     # Classification process
     print("\nClassifying history...")
@@ -286,6 +292,7 @@ def classification(request):
     can_start_classification = None
     try:
         status = App_Settings.objects.get(name='classification_status').value
+        print(status)
         if status == 0:
             can_start_classification = False
         elif status == 1:
@@ -293,8 +300,6 @@ def classification(request):
     except Exception as e:
         logging.error(f"Error retrieving classification status: {e}")
         can_start_classification = True
-
-    print(can_start_classification)
 
     latest_backup = get_latest_backup_date()
 
@@ -307,7 +312,7 @@ def classification(request):
     return render(request, 'frontend/classification.html', context)
 
 
-def classification_status(request):
+def get_classification_status(request):
     """Check the status of the classification process."""
     global classifier
 
@@ -320,6 +325,14 @@ def classification_status(request):
         'progress': int((status.get('processed', 0) / max(1, status.get('total', 1))) * 100) if status.get('total', 0) > 0 else 0,
         'browser': status.get('browser', 'Unknown'),
     }
+
+    db_status = App_Settings.objects.get(name='classification_status').value
+
+    if data['remaining'] == 0 and db_status == 1:
+        # Classification is complete
+        response = HttpResponse()
+        response['HX-Redirect'] = reverse('classification')
+        return response
 
     return render(request, 'components/progress.html', data)
 

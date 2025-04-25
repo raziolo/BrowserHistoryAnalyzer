@@ -19,9 +19,12 @@ class HistoryClassifier:
     def __init__(self, model_name: str = "local-model", base_url: str = "http://localhost:1234/v1"):
         self.client = OpenAI(base_url=base_url, api_key="not-needed")
         self.model_name = App_Settings.objects.get(name='current_model').value
-        self.model_thinking = app_settings.AI_MODEL_THINKING
+        self.model_thinking = False
         self.backup_dir = app_settings.BACKUP_DIR
         self.status = {}
+        self.temperature = App_Settings.objects.get(name='temperature').value
+        self.max_tokens = App_Settings.objects.get(name='max_tokens').value
+        self.current_categories = App_Settings.objects.get(name='categories').value
 
 
     def _load_latest_backup(self, browser: str) -> Optional[List[Dict]]:
@@ -43,7 +46,7 @@ class HistoryClassifier:
     def _generate_category(self, entry: Dict) -> Dict:
         """Classify a single history entry using local model"""
         prompt = f"""Analyze this browsing history entry and classify it into one of these categories: 
-                {', '.join(app_settings.CATEGORIES)}.
+                {', '.join(self.current_categories)}.
 
                 Entry: {entry['title']} ({entry['url']})
                 Provide only the category name, nothing else.
@@ -55,8 +58,8 @@ class HistoryClassifier:
             response = self.client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model=self.model_name,
-                temperature=app_settings.TEMPERATURE,
-                max_tokens=app_settings.MAX_TOKENS,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
             )
 
             category = response.choices[0].message.content.strip()
@@ -64,9 +67,9 @@ class HistoryClassifier:
             if self.model_thinking:
                 category = category.split("</think>")[0].strip()
                 #try to match one of the categories
-                category = next((cat for cat in app_settings.CATEGORIES if cat.lower() in category.lower()), "Other")
+                category = next((cat for cat in self.current_categories if cat.lower() in category.lower()), "Other")
 
-            if category not in app_settings.CATEGORIES:
+            if category not in self.current_categories:
                 logger.warning(f"Unknown category '{category}' for {entry['url']}")
                 category = "Other"
 

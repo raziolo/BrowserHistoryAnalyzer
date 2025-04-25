@@ -81,7 +81,7 @@
                 </div>
                 {# HTMX Polling Section #}
                 <div
-                    hx-get="{% url 'classification_status' %}"
+                    hx-get="{% url 'get_classification_status' %}"
                     hx-trigger="every 1s"
                     hx-swap="innerHTML"
                     class="flex-1 my-4"

@@ -1,29 +1,24 @@
-<div class="timeline timeline-vertical">
-    <div class="timeline-item">
-        <div class="timeline-marker"></div>
-        <div class="timeline-content">
-            <p class="text-sm font-medium">Current Progress</p>
-            <div class="text-xs text-base-content/60">
-                {{ progress }}% Complete
-            </div>
+<div class="w-full space-y-1">  <!-- Container with some vertical spacing -->
+
+    <!-- Progress Bar Section -->
+    <div>
+        <div class="flex justify-between text-xs mb-1 text-base-content/80 font-medium">
+             <span>Overall Progress</span>
+             <span>{{ progress }}%</span>
         </div>
+        <progress class="progress progress-success w-full" value="{{ progress }}" max="100"></progress>
     </div>
-    <div class="timeline-item">
-        <div class="timeline-marker timeline-marker-success"></div>
-        <div class="timeline-content">
-            <p class="text-sm font-medium">Files Processed</p>
-            <div class="text-xs text-base-content/60">
-                {{ processed }}/{{ total }}
-            </div>
-        </div>
+
+    <!-- Additional Details Section -->
+    <div class="text-xs text-base-content/60 flex justify-between items-center pt-1">
+        <!-- Display processed/total files -->
+        <span>
+             Entries: {{ processed }}/{{ total }}
+        </span>
+        <!-- Display current browser -->
+        <span>
+            Browser: {{ browser|title }}
+        </span>
     </div>
-    <div class="timeline-item">
-        <div class="timeline-marker timeline-marker-success"></div>
-        <div class="timeline-content">
-            <p class="text-sm font-medium">Current Browser</p>
-            <div class="text-xs text-base-content/60">
-                {{ browser|title }}
-            </div>
-        </div>
-    </div>
+
 </div>
