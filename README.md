@@ -134,4 +134,4 @@ MIT License – Use freely, but please attribute if sharing!
 
 *(Made with Python, SQLite, and local AI magic ✨)*
 
-NOTE: This README has been partially made with AI since I have no creativity. 
+ 
