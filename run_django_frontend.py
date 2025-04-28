@@ -1,8 +1,4 @@
 import time
-import json # Though not strictly needed for saving with JSONField via ORM
-
-
-
 
 def main():
     import os
@@ -22,73 +18,20 @@ def main():
 
     from django.core.management import call_command
     from frontend.models import App_Settings
+    from HistoryApp.app_settings import load_initial_settings
 
-    def load_initial_settings():
-        print("Loading initial App Settings...")
+    # Run the Django development server
+    call_command('makemigrations')
+    # call_command('flush', '--no-input')
 
-        base_settings = {
-            'classification_status': "Complete",  # String value
-            'days_to_analyze': 1,  # Integer value
-            'classification_parameters': {  # Dictionary (will be stored as JSON)
-                "categories": [
-                    "Social Media", "News", "Media", "E‑commerce", "Shopping",
-                    "Education", "Learning", "Video", "Streaming", "Music", "Audio",
-                    "Technology", "Gadgets", "Finance", "Banking", "Health", "Fitness",
-                    "Travel", "Transportation", "Sports", "Government", "Politics",
-                    "Jobs", "Career", "Lifestyle", "Hobbies", "Food", "Cooking",
-                    "Real Estate", "Science", "Research", "Art", "Culture", "Forums",
-                    "Q&A", "Blogs", "Personal", "Adult", "Utilities", "Productivity",
-                    "Other"
-                ],
-            },
-            'temperature': 0.1,  # Float value
-            'max_tokens': 1000,  # Integer value
-            'current_model': "",
-            'settings_loaded': True,
-        }
-
-        # --- Process base_settings ---
-        for key, value in base_settings.items():
-            obj, created = App_Settings.objects.update_or_create(
-                name=key,  # Field to match on
-                defaults={'value': value}  # Field(s) to set or update
-                # Django's JSONField handles serialization
-            )
-            if created:
-                print(f"  Created setting: {key}")
-            else:
-                print(f"  Updated setting: {key}")
-
-        # --- Explicitly create the 'categories' setting from the list ---
-        # This is crucial because the view/form expects a top-level 'categories' setting
-        # containing JUST the list of strings.
-        category_list = base_settings.get('classification_parameters', {}).get('categories', [])
-        if category_list:  # Only create if categories were found
-            obj, created = App_Settings.objects.update_or_create(
-                name='categories',
-                defaults={'value': category_list}  # Store the list directly
-            )
-            if created:
-                print(f"  Created setting: categories (list)")
-            else:
-                print(f"  Updated setting: categories (list)")
-        else:
-            print(
-                "  Warning: Could not find categories list in base_settings['classification_parameters'] to create 'categories' setting.")
-
-        print("Initial settings loading complete.")
+    time.sleep(0.1)
+    call_command('makemigrations', 'frontend')
+    time.sleep(0.1)
+    call_command('migrate')
+    time.sleep(0.1)
+    call_command('collectstatic', '--noinput')
 
     if App_Settings.objects.filter(name='settings_loaded').exists():
-        # Run the Django development server
-        call_command('makemigrations')
-        # call_command('flush', '--no-input')
-
-        time.sleep(0.1)
-        call_command('makemigrations', 'frontend')
-        time.sleep(0.1)
-        call_command('migrate')
-        time.sleep(0.1)
-        call_command('collectstatic', '--noinput')
 
         settings_loaded = App_Settings.objects.get(name='settings_loaded').value
         if not settings_loaded:

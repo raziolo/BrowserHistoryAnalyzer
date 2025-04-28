@@ -1,14 +1,13 @@
 # classifier.py
 import json
 import logging
-import sqlite3
 import time
 from pathlib import Path
 from typing import List, Dict, Optional
 from openai import OpenAI
 from datetime import datetime
 from HistoryApp import app_settings
-from frontend.models import App_Settings
+from frontend.utils.settings import get_setting
 
 # AI model name from settings.py
 
@@ -18,13 +17,13 @@ logger = app_settings.LOGGER
 class HistoryClassifier:
     def __init__(self, model_name: str = "local-model", base_url: str = "http://localhost:1234/v1"):
         self.client = OpenAI(base_url=base_url, api_key="not-needed")
-        self.model_name = App_Settings.objects.get(name='current_model').value
+        self.model_name = get_setting('current_model', default_value=model_name)
         self.model_thinking = False
         self.backup_dir = app_settings.BACKUP_DIR
         self.status = {}
-        self.temperature = App_Settings.objects.get(name='temperature').value
-        self.max_tokens = App_Settings.objects.get(name='max_tokens').value
-        self.current_categories = App_Settings.objects.get(name='categories').value
+        self.temperature = get_setting('temperature', default_value=0.1)
+        self.max_tokens = get_setting('max_tokens', default_value=1000)
+        self.current_categories = get_setting('categories', default_value=['Work', 'Personal', 'Other'])
 
 
     def _load_latest_backup(self, browser: str) -> Optional[List[Dict]]:
@@ -53,6 +52,10 @@ class HistoryClassifier:
                 If the entry doesn't fit any category, return "Other"."""
 
         logger.info(f"Classifying entry: {entry['url']}")
+
+        if get_setting('classification_status', 1) == 1:
+            logger.info(f"Classification is disabled. Skipping entry: {entry['url']}")
+            return {**entry, "category": "Classification Disabled"}
 
         try:
             response = self.client.chat.completions.create(
@@ -119,6 +122,9 @@ class HistoryClassifier:
             processed += 1
 
             logger.info(f"Classified entry: {classified_entry['url']} -> {classified_entry['category']}")
+            if classified_entry['category'] == "Classification Disabled":
+                logger.info(f"Classification disabled for {entry['url']}")
+                continue
             results.append(classified_entry)
             if (idx + 1) % 5 == 0:
                 time.sleep(0.1)  # Rate limit to avoid overwhelming the model

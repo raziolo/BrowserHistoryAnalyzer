@@ -1,0 +1,10 @@
+{# frontend/templates/frontend/partials/delete_column_template.html #}
+
+<button class="btn btn-xs btn-error btn-outline btn-square"
+        hx-delete="{% url 'delete_history_event' pk=record.pk %}"
+        hx-confirm="Are you sure you want to delete this entry: '{{ record.title|truncatechars:30 }}'?"
+        hx-target="closest tr"
+        hx-swap="outerHTML swap:200ms"
+        title="Delete Entry">
+    <i class="bi bi-trash3"></i>
+</button>

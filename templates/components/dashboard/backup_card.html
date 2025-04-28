@@ -10,8 +10,8 @@
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Chrome_icon_%28September_2014%29.svg/640px-Google_Chrome_icon_%28September_2014%29.svg.png" alt="Chrome Icon" class="mr-2 w-5 h-5">
                     <span>Chrome Status</span>
                 </div>
-                <div class="tooltip tooltip-left" data-tip="{% if backup_card_data.chrome.status %}Backup completed successfully{% else %}Backup failed or not run{% endif %}">
-                    {% if backup_card_data.chrome.status %}
+                <div class="tooltip tooltip-left" data-tip="{% if backup_card_data.chrome.has_backup %}Backup completed successfully{% else %}Backup failed or not run{% endif %}">
+                    {% if backup_card_data.has_backup %}
                         <span class="badge badge-success">Backup OK</span>
                     {% else %}
                         <span class="badge badge-error">Failed</span>
@@ -25,8 +25,8 @@
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Mozilla_Firefox_logo_2013.svg/640px-Mozilla_Firefox_logo_2013.svg.png" alt="Firefox Icon" class="mr-2 w-5 h-5">
                     <span>Firefox Status</span>
                 </div>
-                 <div class="tooltip tooltip-left" data-tip="{% if backup_card_data.firefox.status %}Backup completed successfully{% else %}Backup failed or not run{% endif %}">
-                    {% if backup_card_data.firefox.status %}
+                 <div class="tooltip tooltip-left" data-tip="{% if backup_card_data.firefox.has_backup %}Backup completed successfully{% else %}Backup failed or not run{% endif %}">
+                    {% if backup_card_data.has_backup %}
                         <span class="badge badge-success">Backup OK</span>
                     {% else %}
                         <span class="badge badge-error">Failed</span>
@@ -34,19 +34,34 @@
                 </div>
             </div>
 
-            {# Last Backup Time #}
+            {# Last Backup Time - Updated with Freshness Check #}
             <div class="flex justify-between items-center mb-4 text-sm">
                 <span class="text-base-content/80">Last Backup</span>
-                 {% if backup_card_data.last_backup %}
-                    <div class="tooltip tooltip-left" data-tip="Backup completed on: {{ backup_card_data.last_backup }}">
-                         <span class="badge badge-info">{{ backup_card_data.last_backup }}</span>
-                    </div>
-                 {% else %}
-                     <div class="tooltip tooltip-left" data-tip="No successful backups found">
-                         <span class="badge badge-warning">No Backups</span>
-                     </div>
-                 {% endif %}
+
+                {# Use a tooltip regardless of state, populated by the backend message #}
+                <div class="tooltip tooltip-left" data-tip="{{ backup_card_data.tooltip_message }}">
+
+                    {% if backup_card_data.has_backup %}
+                        {# A backup exists, check its freshness to decide the badge style #}
+
+                        {% if backup_card_data.is_fresh %}
+                            {# Backup exists and is FRESH - use success/info badge #}
+                            <span class="badge badge-success">{{ backup_card_data.last_backup_time }}</span>
+                        {% else %}
+                            {# Backup exists but is STALE/OLD - use warning/error badge #}
+                            {# Adding text like 'Stale' makes the badge meaning clearer #}
+                            <span class="badge badge-warning">Stale: {{ backup_card_data.last_backup_time }}</span>
+                        {% endif %}
+
+                    {% else %}
+                        {# NO backup exists (or an error occurred making it unusable) #}
+                        {# Use a more severe badge like error or warning #}
+                        <span class="badge badge-error">None Found</span>
+                    {% endif %}
+
+                </div> {# End tooltip #}
             </div>
+
 
             {# Warning Message #}
             <div class="alert alert-warning text-xs p-2 mb-4"> {# DaisyUI Alert for emphasis #}

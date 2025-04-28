@@ -1,0 +1,65 @@
+{# Sidebar component #}
+<nav class="sidebar bg-base-100 p-4 shadow-lg">
+        <div class="flex flex-col h-full">
+            {% include 'components/logo.html' %}
+            <ul class="menu p-0 mb-auto"> {# DaisyUI Menu #}
+                <li>
+                    <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>
+                       <i class="bi bi-house-door-fill w-4 h-4"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'classification' %}" {% if request.resolver_match.url_name == 'classification' %}class="active"{% endif %}>
+                       <i class="bi bi-search w-4 h-4"></i> Classification
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'history_list' %}" {% if request.resolver_match.url_name == 'history_list' %}class="active"{% endif %}>
+                       <i class='bi bi-book'></i> History
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'detailed_dashboard' %}" {% if request.resolver_match.url_name == 'detailed_dashboard' %}class="active"{% endif %}>
+                       <i class="bi bi-graph-up-arrow w-4 h-4"></i> Detailed Analytics
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'settings' %}" {% if request.resolver_match.url_name == 'settings' %}class="active"{% endif %}>
+                       <i class="bi bi-gear-fill w-4 h-4"></i> Settings
+                    </a>
+                </li>
+                    <div class="mb-4 mt-4">
+                        <button id="themeToggle" class="btn btn-outline btn-sm w-full">
+                            🌓 Toggle Theme
+                        </button>
+                    </div>
+
+            {# --- NEW SIDEBAR PROGRESS COMPONENT --- #}
+            {% if not can_start_classification %}
+                {% if not request.resolver_match.url_name == 'classification' %}
+                    <div id="sidebar-progress-indicator"
+                         class="my-2" {# Add vertical margin #}
+                         hx-get="{% url 'get_classification_status' %}"
+                         hx-trigger="every 2s" {# Poll slightly less often maybe? #}
+                         hx-swap="innerHTML">
+                         {# Initial loading state shown before first HTMX poll completes #}
+                         <div class="flex items-center justify-center text-xs p-2 bg-base-200 rounded">
+                             <span class="loading loading-dots loading-sm mr-2"></span>
+                             Checking status...
+                         </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+            {# --- END NEW COMPONENT --- #}
+
+
+
+
+            <div class="text-base-content/60 text-xs text-center">
+                    Version 1.0.0
+                </div>
+            </ul>
+
+
+        </div>
+    </nav>

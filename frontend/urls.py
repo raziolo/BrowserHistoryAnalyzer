@@ -1,17 +1,30 @@
 
 from django.urls import path
-from . import views
-from .views import HistoryEventListView
+from .views import (
+    dashboard,
+    classification,
+    settings,
+    history,
+    action
+)
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('make_backup', views.make_backup, name='make_backup'),
-    path('classification', views.classification, name='classification'),
-    path('start_classification', views.start_classification, name='start_classification'),
-    path('get_classification_status', views.get_classification_status, name='get_classification_status'),
-    path('reset_classification_status', views.reset_classification_status, name='reset_classification_status'),
-    path('settings/', views.settings_view, name='settings'),
+    path('', dashboard.home, name='home'),
+    path('detailed-dashboard/', dashboard.detailed_dashboard_view, name='detailed_dashboard'),
 
-    path('history/', HistoryEventListView.as_view(), name='history_list'),
+    path('classification/', classification.classification, name='classification'),
+    path('get_classification_status/', classification.get_classification_status,
+         name='get_classification_status'),
+    path('reset-classification/', classification.reset_classification_status, name='reset_classification_status'),
+
+    path('settings/', settings.settings_view, name='settings'),
+
+    # Ensure HistoryEventListView is imported correctly if using .as_view()
+    path('history/', history.HistoryEventListView.as_view(), name='history_list'),
+    path('delete-history-event/<int:pk>/', history.delete_history_event, name='delete_history_event'),
+
+    path('flush-db/', action.flush_db, name='flush_db'),  # Example URL for the action
+
+    path('make-backup/', action.make_backup, name='make_backup'),  # Example URL for the action
 
 ]

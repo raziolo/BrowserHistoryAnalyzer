@@ -1,26 +1,37 @@
 <!-- templates/django_tables2/daisyui.html -->
 {% load django_tables2 %}
 {% load i18n %}
+{% load frontend_tags %} {# <--- Add this line to load your tags #}
+
 
 <!-- Container with responsive behavior -->
 <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
   <!-- Desktop view (hidden on very small screens) -->
   <table class="table table-zebra w-full hidden sm:table">
     <thead>
-      <tr>
-        {% for column in table.columns %}
-        <th>
-          {% if column.orderable %}
-          <button hx-get="{{ column.order_by_alias.next }}" hx-target="#content" hx-swap="innerHTML" class="link link-hover bg-transparent border-none p-0">
-            {{ column.header }}
-          </button>
-          {% else %}
-          {{ column.header }}
-          {% endif %}
-        </th>
-        {% endfor %}
-      </tr>
-    </thead>
+  <tr>
+    {% for column in table.columns %}
+      {% if column.orderable %}
+          <th {{ column.attrs.th.as_html }}>
+            <a href="{% querystring table.prefixed_order_by_field=column.order_by_alias %}"
+               {# Ensure HTMX uses the same dynamic querystring #}
+               hx-get="{% querystring table.prefixed_order_by_field=column.order_by_alias %}"
+               hx-target="#history-table-content"
+               hx-swap="innerHTML"
+               hx-indicator="#loading-indicator">
+                {{ column.header }}
+                {# Optional icons #}
+                {% if column.is_ordered %}
+                  {% if column.order_by_alias.is_descending %}<i class="bi bi-sort-down ml-1"></i>{% else %}<i class="bi bi-sort-up ml-1"></i>{% endif %}
+                {% endif %}
+            </a>
+          </th>
+      {% else %}
+        <th {{ column.attrs.th.as_html }}>{{ column.header }}</th>
+      {% endif %}
+    {% endfor %}
+  </tr>
+</thead>
     <tbody>
       {% for row in table.paginated_rows %}
       <tr>
@@ -64,8 +75,4 @@
   </div>
 </div>
 
-{% if table.page %}
-<div class="mt-4 flex justify-center">
-  {% include "django_tables2/pagination.html" %}
-</div>
-{% endif %}
+

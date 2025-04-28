@@ -1,0 +1,133 @@
+{# frontend/templates/frontend/dashboard_components/_date_filter.html #}
+<div class="card bg-base-100 shadow">
+    <div class="card-body p-4" x-data="dateFilter('{{ start_date }}', '{{ end_date }}')"> {# Initialize Alpine component #}
+        <form id="date-filter-form"
+              hx-get="{% url 'detailed_dashboard' %}"
+              hx-target="#dashboard-content"
+              hx-swap="innerHTML"
+              hx-indicator="#loading-indicator"
+              class="space-y-4">
+
+            {# Date Inputs Row #}
+            <div class="flex flex-wrap items-end gap-4">
+                <div>
+                    <label for="start_date" class="label label-text pb-1 text-sm">Start Date</label>
+                    <input type="date" id="start_date" name="start_date" x-model="startDate" @change="activePeriod = 'custom'" class="input input-bordered input-sm w-full max-w-[150px]">
+                </div>
+                <div>
+                    <label for="end_date" class="label label-text pb-1 text-sm">End Date</label>
+                    <input type="date" id="end_date" name="end_date" x-model="endDate" @change="activePeriod = 'custom'" class="input input-bordered input-sm w-full max-w-[150px]">
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-funnel-fill mr-1"></i> Apply Filter
+                </button>
+                {# Loading Indicator (hidden by default) #}
+                <span id="loading-indicator" class="htmx-indicator loading loading-spinner loading-sm ml-2"></span>
+            </div>
+
+            {# Quick Selectors Row #}
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-base-200">
+                <span class="text-sm font-medium mr-2">Quick Select:</span>
+                <div class="join">
+                    {# Toggle Button: Current / Last #}
+                    <button type="button" @click="togglePeriod()" class="btn btn-sm join-item" :class="isLast ? 'btn-neutral' : 'btn-ghost'">
+                        <i class="bi" :class="isLast ? 'bi-arrow-left-short' : 'bi-calendar-check'"></i>
+                        <span x-text="isLast ? 'Last' : 'Current'"></span>
+                    </button>
+
+                    {# Period Chips #}
+                    <button type="button" @click="setPeriod('week')" class="btn btn-sm join-item btn-ghost" :class="{ 'btn-active btn-primary': activePeriod === 'week' }">Week</button>
+                    <button type="button" @click="setPeriod('month')" class="btn btn-sm join-item btn-ghost" :class="{ 'btn-active btn-primary': activePeriod === 'month' }">Month</button>
+                    <button type="button" @click="setPeriod('year')" class="btn btn-sm join-item btn-ghost" :class="{ 'btn-active btn-primary': activePeriod === 'year' }">Year</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('dateFilter', (initialStartDate, initialEndDate) => ({
+        startDate: initialStartDate,
+        endDate: initialEndDate,
+        isLast: false, // Start with 'Current'
+        activePeriod: 'custom', // 'custom', 'week', 'month', 'year'
+
+        // Helper to format Date object to YYYY-MM-DD
+        formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        },
+
+        // Calculate and set dates based on period and isLast flag
+        applyDateCalculation() {
+            if (this.activePeriod === 'custom') return; // Don't recalculate if custom dates are set
+
+            const now = new Date();
+            let start, end;
+            let periodOffset = this.isLast ? 1 : 0; // 0 for current, 1 for last
+
+            switch (this.activePeriod) {
+                case 'week':
+                    start = new Date(now);
+                    const dayOfWeek = start.getDay(); // 0=Sun, 1=Mon,...
+                    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Adjust Sun to be end of week
+                    start.setDate(now.getDate() + diffToMonday - (periodOffset * 7)); // Go to Monday of current/last week
+                    end = new Date(start);
+                    end.setDate(start.getDate() + 6); // Sunday of that week
+                    break;
+                case 'month':
+                    start = new Date(now.getFullYear(), now.getMonth() - periodOffset, 1); // 1st of current/last month
+                    end = new Date(now.getFullYear(), now.getMonth() - periodOffset + 1, 0); // Last day of current/last month
+                    break;
+                case 'year':
+                    start = new Date(now.getFullYear() - periodOffset, 0, 1); // Jan 1st of current/last year
+                    end = new Date(now.getFullYear() - periodOffset, 11, 31); // Dec 31st of current/last year
+                    break;
+                default:
+                    // Should not happen if activePeriod is not 'custom'
+                    return;
+            }
+
+            this.startDate = this.formatDate(start);
+            this.endDate = this.formatDate(end);
+
+
+        },
+
+        // Handler for clicking period chips
+        setPeriod(period) {
+            this.activePeriod = period;
+            this.applyDateCalculation();
+        },
+
+        // Handler for clicking the Current/Last toggle
+        togglePeriod() {
+            this.isLast = !this.isLast;
+             // Re-apply calculation only if a period chip is active
+            if (this.activePeriod !== 'custom') {
+                this.applyDateCalculation();
+            }
+             // If dates were custom, toggling doesn't auto-apply, user needs to click a chip again
+        },
+
+        // Trigger HTMX request
+        submitForm() {
+             const form = document.getElementById('date-filter-form');
+             if (form) {
+                 htmx.trigger(form, 'submit'); // More direct way to trigger HTMX GET
+             }
+        },
+
+        // Initialize component - check if initial dates match a preset
+        init() {
+            // Optional: You could try to reverse-calculate if the initial dates match
+            // a current/last week/month/year, but it's complex and usually not needed.
+            // For now, we assume initial load might be custom or default.
+            console.log('Date filter initialized');
+        }
+    }));
+});
+</script>

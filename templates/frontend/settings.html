@@ -5,9 +5,7 @@
 {% block title %}Classifier Settings{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto p-6">
-
-
+<div class="space-y-6" x-data="{ showResetConfirmModal: false }" >
 
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
@@ -116,6 +114,14 @@
                         {% endif %}
                     </div>
 
+                    <div class="alert alert-info shadow-lg mt-4 col-span-2">
+                            <div class="">
+                                <i class="bi bi-info-circle text-lg"></i>
+                                <span class="font-bold ml-2">Info:</span>
+                                <span>Using chain-of-thought models is discouraged, as it is unnecessary for this use case.</span>
+                            </div>
+                        </div>
+
                     <div class="form-control col-span-2">
                         <label class="label" for="{{ form.current_model.id_for_label }}">
                             <span class="label-text">{{ form.current_model.label }}</span>
@@ -147,7 +153,19 @@
                     </button>
                 </div>
 
-                <div class="text-right mt-4">
+                 <div class="mt-4 col-span-2">
+                    {# Changed from <a> to <button type="button"> #}
+                    <button
+                        type="button"
+                        @click.prevent="showResetConfirmModal = true" {# Open modal on click #}
+                        class="btn btn-sm btn-error w-full"
+                    >
+                        <i class="bi bi-trash3-fill mr-2"></i> {# Changed icon slightly #}
+                        Reset Classification Status
+                    </button>
+                </div>
+
+            <div class="text-right mt-4">
                     <div class="alert alert-warning shadow-lg">
                         <div>
                             <i class="bi bi-exclamation-triangle-fill text-lg"></i>
@@ -156,14 +174,106 @@
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 col-span-2">
-                    <a href="{% url 'reset_classification_status' %}" class="btn btn-sm btn-error w-full">
-                        <i class="bi bi-circle-fill mr-2"></i>
-                        Reset Classification Status
-                    </a>
-                </div>
             </form>
         </div>
     </div>
+{# --- Reset Confirmation Modal (Error Themed) --- #}
+    <dialog class="modal modal-bottom sm:modal-middle" :class="{'modal-open': showResetConfirmModal}">
+        <div class="modal-box border-t-4 border-error"> {# Added error border #}
+            <h3 class="font-bold text-lg text-error flex items-center">
+                <i class="bi bi-exclamation-triangle-fill mr-2"></i>Confirm Reset
+            </h3>
+            <p class="py-4">
+                Are you sure you want to reset the classification status?
+            </p>
+            <p class="text-error font-semibold">
+                All existing classification progress and assignments will be permanently deleted. This action cannot be undone.
+            </p>
+            <div class="modal-action mt-6">
+                 {# Cancel Button #}
+                 <button type="button" @click="showResetConfirmModal = false" class="btn btn-ghost">Cancel</button>
+                 {# Confirm Button - Navigates to the reset URL #}
+                 <button
+                     type="button"
+                     @click="window.location.href = '{% url 'reset_classification_status' %}'; showResetConfirmModal = false"
+                     class="btn btn-error" {# Error style for confirm button #}
+                 >
+                     Yes, Reset Status
+                 </button>
+            </div>
+        </div>
+         {# Optional: Click backdrop to close #}
+         <form method="dialog" class="modal-backdrop">
+             <button @click="showResetConfirmModal = false">close</button>
+         </form>
+    </dialog>
+    {# --- End Reset Confirmation Modal --- #}
 </div>
+
+    {# --- Additional Card for Flush DB --- #}
+    <div class="space-y-6" x-data="{ showFlushConfirmModal: false }">
+
+
+    {# --- Danger Zone Card --- #}
+    <div class="card bg-base-100 shadow-xl border border-error/50 mt-5">
+        <div class="card-body">
+             <h2 class="card-title text-xl mb-4 text-error">
+                <i class="bi bi-exclamation-octagon-fill mr-2"></i>
+                Danger Zone
+            </h2>
+            <p class="text-sm text-base-content/80 mb-4">
+                These actions are irreversible and will result in permanent data loss. Proceed with extreme caution.
+            </p>
+
+            {# Flush DB Button #}
+            <div class="mt-4">
+                <button
+                    type="button"
+                    @click.prevent="showFlushConfirmModal = true" {# Trigger the new modal #}
+                    class="btn btn-error w-full" {# Error style #}
+                >
+                    <i class="bi bi-database-fill-x mr-2"></i> {# Database + X icon #}
+                    Flush Entire Database
+                </button>
+                <p class="text-xs text-base-content/60 mt-1 text-center">Deletes all history, classifications, and settings.</p>
+            </div>
+        </div>
+    </div>
+
+    {# --- Flush Confirmation Modal (Error Themed) --- #}
+    <dialog class="modal modal-bottom sm:modal-middle" :class="{'modal-open': showFlushConfirmModal}">
+        <div class="modal-box border-t-4 border-error"> {# Added error border #}
+            <h3 class="font-bold text-lg text-error flex items-center">
+                <i class="bi bi-exclamation-triangle-fill mr-2"></i>Confirm Flush
+            </h3>
+            <p class="py-4">
+                Are you sure you want to flush the entire database?
+            </p>
+            <p class="text-error font-semibold">
+                This action cannot be undone and will result in permanent data loss.
+            </p>
+            <div class="modal-action mt-6">
+                 {# Cancel Button #}
+                 <button type="button" @click="showFlushConfirmModal = false" class="btn btn-ghost">Cancel</button>
+                 {# Confirm Button - Navigates to the flush URL #}
+                 <button
+                     type="button"
+                     @click="window.location.href = '{% url 'flush_db' %}'; showFlushConfirmModal = false"
+                     class="btn btn-error" {# Error style for confirm button #}
+                 >
+                     Yes, Flush Database
+                    </button>
+            </div>
+        </div>
+         {# Optional: Click backdrop to close #}
+         <form method="dialog" class="modal-backdrop">
+             <button @click="showFlushConfirmModal = false">close</button>
+         </form>
+    </dialog>
+    {# --- End Flush Confirmation Modal --- #}
+    </div>
+    {# --- End of Flush DB Card --- #}
+
+
+
 {% endblock %}

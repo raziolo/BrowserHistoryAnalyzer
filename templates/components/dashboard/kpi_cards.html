@@ -1,0 +1,152 @@
+{# frontend/templates/components/dashboard/kpi_cards.html #}
+{% load humanize %}
+
+{# --- Main KPI Grid (Houses the 8 standard cards) --- #}
+{# Adjust grid columns (e.g., lg:grid-cols-4) and gap as needed for your design #}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+
+    {# KPI Card 1: Total Entries #}
+    <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow duration-300 animate-fade-in" style="animation-delay: 0.1s;">
+        <div class="card-body p-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-full bg-primary/10 text-primary"><i class="bi bi-journal-text text-xl"></i></div>
+                <div>
+                    <div class="text-base-content/70 text-sm uppercase tracking-wider">Total Entries</div>
+                    <div class="text-2xl font-bold text-base-content">{{ analytics.total_visits|intcomma|default:"0" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# KPI Card 2: Total Visit Count #} {# Moved up #}
+    <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow duration-300 animate-fade-in" style="animation-delay: 0.2s;">
+        <div class="card-body p-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-full bg-info/10 text-info"><i class="bi bi-binoculars-fill text-xl"></i></div>
+                <div>
+                    <div class="text-base-content/70 text-sm uppercase tracking-wider">Total Visit Count</div>
+                    <div class="text-2xl font-bold text-base-content">{{ analytics.total_visit_count_sum|intcomma|default:"0" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# KPI Card 3: Unique URLs #} {# Moved up #}
+    <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow duration-300 animate-fade-in" style="animation-delay: 0.3s;">
+        <div class="card-body p-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-full bg-secondary/10 text-secondary"><i class="bi bi-link-45deg text-xl"></i></div>
+                <div>
+                    <div class="text-base-content/70 text-sm uppercase tracking-wider">Unique URLs</div>
+                    <div class="text-2xl font-bold text-base-content">{{ analytics.unique_urls|intcomma|default:"0" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# KPI Card 4: Unique Domains #} {# Moved up #}
+    <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow duration-300 animate-fade-in" style="animation-delay: 0.4s;">
+        <div class="card-body p-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-full bg-accent/10 text-accent"><i class="bi bi-globe2 text-xl"></i></div>
+                <div>
+                    <div class="text-base-content/70 text-sm uppercase tracking-wider">Unique Domains</div>
+                    <div class="text-2xl font-bold text-base-content">{{ analytics.unique_domains|intcomma|default:"0" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# KPI Card 5: Busiest Day #}
+    <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow duration-300 animate-fade-in border border-warning/30" style="animation-delay: 0.5s;">
+        <div class="card-body p-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-full bg-warning/10 text-warning"><i class="bi bi-calendar-week text-xl"></i></div>
+                <div>
+                    <div class="text-base-content/70 text-sm uppercase tracking-wider">Busiest Day</div>
+                    <div class="text-2xl font-bold text-base-content">{{ analytics.most_active_day|default:"N/A" }}</div>
+                     {# Show count only if available and non-zero, formatted nicely #}
+                     {% if analytics.most_active_day_entries_count %}
+                        <div class="text-xs text-base-content/60">({{ analytics.most_active_day_entries_count|intcomma }} entries)</div>
+                     {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {# KPI Card 7: Top Category #}
+    <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow duration-300 animate-fade-in border border-success/30" style="animation-delay: 0.7s;">
+         <div class="card-body p-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-full bg-success/10 text-success"><i class="bi bi-bullseye text-xl"></i></div>
+                <div>
+                    <div class="text-base-content/70 text-sm uppercase tracking-wider">Top Category</div>
+                    <div class="text-xl font-bold text-base-content truncate" title="{{ analytics.most_probable_category|default:'N/A' }}">{{ analytics.most_probable_category|default:"N/A" }}</div>
+                    <div class="text-xs text-base-content/60">({{ analytics.most_probable_category_perc|floatformat:1 }}% chance)</div> {# Simplified text slightly #}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# KPI Card 8: Top Browser #}
+    <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow duration-300 animate-fade-in border border-primary/30" style="animation-delay: 0.8s;">
+        <div class="card-body p-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 rounded-full bg-primary/10 text-primary"><i class="bi bi-window text-xl"></i></div>
+                <div>
+                    <div class="text-base-content/70 text-sm uppercase tracking-wider">Top Browser</div>
+                    <div class="text-xl font-bold text-base-content truncate" title="{{ analytics.dominant_browser|default:'N/A' }}">{{ analytics.dominant_browser|default:"N/A" }}</div>
+                    <div class="text-xs text-base-content/60">({{ analytics.dominant_browser_perc|floatformat:1 }}% of visits)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div> {# --- End Main KPI Grid --- #}
+
+
+{# --- Data Coverage Card (Full Width Below the Main Grid) --- #}
+<div class="card bg-base-100 shadow hover:shadow-lg transition-shadow duration-300 animate-fade-in border {% if analytics.dates_match %}border-success/30{% else %}border-warning/50{% endif %}" style="animation-delay: 0.9s;">
+    {# Removed lg:col-span-2 as it's not needed when outside the grid #}
+    <div class="card-body p-4 md:p-6">
+        <h2 class="card-title text-base justify-center mb-4 text-base-content/80">
+             <i class="bi {% if analytics.dates_match %}bi-shield-check{% else %}bi-shield-exclamation{% endif %} mr-2"></i>
+             Data Coverage Check
+        </h2>
+        <div class="flex flex-col sm:flex-row items-center justify-around gap-4">
+            {# Analyzed Start Date Block #}
+            <div class="flex-1 text-center">
+                 <div class="text-base-content/70 text-xs uppercase tracking-wider mb-1">Analyzed Oldest Entry Date</div>
+                 <div class="text-lg font-semibold text-base-content" title="{{ analytics.oldest_classified_entry_date|date:"M d, Y H:i:s"|default:'Not Available' }}">
+                     {{ analytics.oldest_classified_entry_date|date:"M d, Y"|default:"N/A" }}
+                 </div>
+                 <div class="text-xs text-base-content/60">
+                     {{ analytics.oldest_classified_entry_date|date:"H:i:s"|default:"" }}
+                 </div>
+            </div>
+            {# Central Status Icon Block #}
+            <div class="px-4 flex-shrink-0">
+                <i class="bi {% if analytics.dates_match %}bi-check-circle-fill text-success{% else %}bi-exclamation-triangle-fill text-warning{% endif %} text-4xl md:text-5xl"></i>
+            </div>
+            {# Backup Start Date Block #}
+            <div class="flex-1 text-center">
+                <div class="text-base-content/70 text-xs uppercase tracking-wider mb-1">Backups Oldest Entry Date</div>
+                <div class="text-lg font-semibold text-base-content" title="{{ analytics.oldest_backups_entry_date|date:"M d, Y H:i:s"|default:'Not Available' }}">
+                     {{ analytics.oldest_backups_entry_date|date:"M d, Y"|default:"N/A" }}
+                </div>
+                 <div class="text-xs text-base-content/60">
+                     {{ analytics.oldest_backups_entry_date|date:"H:i:s"|default:"" }}
+                 </div>
+            </div>
+        </div>
+        {# Conditional Warning Message #}
+        {% if not analytics.dates_match %}
+            <div class="text-center text-xs text-warning mt-4 pt-3 border-t border-base-content/10">
+               <i class="bi bi-exclamation-triangle mr-1"></i> Analysis start date does not match the oldest available backup record. Coverage might be incomplete.
+            </div>
+        {% endif %}
+    </div>
+</div> {# --- End Data Coverage Card --- #}
+
+{# Removed the inline <style> block - ensure .animate-fade-in is defined globally, e.g., in base.html or your main CSS file #}

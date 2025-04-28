@@ -1,0 +1,31 @@
+{# frontend/templates/frontend/dashboard_components/_category_probability_list.html #}
+{% load humanize %}
+<div class="card bg-base-100 shadow h-full flex flex-col">
+    <div class="card-body pb-2">
+        <h2 class="card-title text-base font-semibold mb-2">
+            <i class="bi bi-graph-up-arrow mr-2 text-success"></i>
+            Top Categories by Probability
+        </h2>
+        <p class="text-xs text-base-content/60 -mt-2">Based on visit frequency in this period.</p>
+    </div>
+    <div class="px-4 py-2 scrollable-list flex-grow"> {# Use existing scrollable class #}
+        {% if analytics.category_probabilities %}
+        <ul class="space-y-2">
+            {% for item in analytics.category_probabilities %}
+            <li class="flex justify-between items-center text-sm border-b border-base-300/50 pb-1 last:border-b-0">
+                <span class="truncate mr-2 font-medium" title="{{ item.category }}">{{ item.category }}</span>
+                <div class="flex items-center space-x-2">
+                     <span class="text-xs text-base-content/70">({{ item.count|intcomma }} visit{{ item.count|pluralize }})</span>
+                     <span class="badge badge-success badge-outline badge-sm">{{ item.perc|floatformat:1 }}%</span>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-center text-sm text-base-content/60 p-4">No category probability data found.</p>
+        {% endif %}
+    </div>
+    <div class="card-body pt-0 pb-4">
+         <p class="text-xs text-base-content/50 text-center">Showing top 10</p>
+    </div>
+</div>

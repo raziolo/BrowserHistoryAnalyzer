@@ -1,18 +1,71 @@
-<!-- frontend/templates/frontend/history_list.html -->
 {% extends "frontend/base.html" %}
 {% load django_tables2 %}
-{% load render_table from django_tables2 %}
+{% load widget_tweaks %} {# Optional: for easier form styling if needed #}
+
+{% block title %}Browser History{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Browser History</h2>
+<div class="space-y-6"> {# Use spacing like the dashboard #}
+    <h1 class="text-3xl font-bold text-base-content">Browser History</h1>
+    <div class="divider"></div>
 
-    <!-- History Table -->
-    <div class="card">
-        <div class="card-body">
-            <div id="content" class="overflow-x-auto">
-                {% render_table table %}
-              </div>
+    {# Filter and Search Form - Use HTMX to target the table content #}
+    <form id="history-filter-form"
+          hx-get="{% url 'history_list' %}"
+          hx-target="#history-table-content"
+          hx-swap="innerHTML"
+          hx-indicator="#loading-indicator"
+          class="card bg-base-100 shadow">
+        <div class="card-body p-4">
+            <div class="flex flex-wrap items-end gap-4">
+                {# Render filter fields manually for better layout control #}
+                <div class="form-control">
+                    <label class="label pb-1" for="{{ filter.form.q.id_for_label }}">
+                        <span class="label-text">{{ filter.form.q.label }}</span>
+                    </label>
+                    {{ filter.form.q }} {# Render the search input widget #}
+                </div>
+                 <div class="form-control">
+                    <label class="label pb-1" for="{{ filter.form.category.id_for_label }}">
+                        <span class="label-text">{{ filter.form.category.label }}</span>
+                    </label>
+                    {{ filter.form.category }} {# Render the category dropdown #}
+                </div>
+                 <div class="form-control">
+                    <label class="label pb-1" for="{{ filter.form.browser.id_for_label }}">
+                        <span class="label-text">{{ filter.form.browser.label }}</span>
+                    </label>
+                    {{ filter.form.browser }} {# Render the browser dropdown #}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-filter mr-1"></i> Apply
+                </button>
+                 <button type="button" onclick="document.getElementById('history-filter-form').reset(); document.getElementById('history-filter-form').dispatchEvent(new Event('submit'));" class="btn btn-ghost btn-sm">
+                    Reset
+                </button>
+                <span id="loading-indicator" class="htmx-indicator loading loading-spinner loading-sm ml-2"></span>
+            </div>
+             {# Display filter errors if any #}
+            {% if filter.form.non_field_errors %}
+                <div class="alert alert-error mt-2 p-2 text-sm">
+                    {{ filter.form.non_field_errors }}
+                </div>
+            {% endif %}
+            {% for field in filter.form %}
+                 {% if field.errors %}
+                     <div class="text-error text-xs mt-1">{{ field.label }}: {{ field.errors|striptags }}</div>
+                 {% endif %}
+            {% endfor %}
+        </div>
+    </form>
+
+
+    {# History Table Container - This is the target for HTMX updates #}
+    <div id="history-table-content" class="card bg-base-100 shadow">
+        <div class="card-body p-0"> {# Remove padding if table itself has it #}
+            {# Include the partial template that renders the table #}
+            {% include 'components/history_table/history_table_partial.html' with table=table %}
         </div>
     </div>
 

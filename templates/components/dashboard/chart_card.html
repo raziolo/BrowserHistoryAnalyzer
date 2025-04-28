@@ -1,0 +1,15 @@
+{# frontend/templates/frontend/dashboard_components/_chart_card.html #}
+<div class="card bg-base-100 shadow h-full">
+    <div class="card-body">
+        <h2 class="card-title text-base font-semibold">
+            <i class="bi {{ icon|default:'bi-bar-chart-fill' }} mr-2 text-primary"></i>
+            {{ title|default:"Chart" }}
+        </h2>
+        <div class="chart-container mt-2"> {# Container for responsive chart #}
+             {# Canvas where Chart.js will draw #}
+             <canvas id="{{ chart_id }}"></canvas>
+             {# Fallback/loading text can be added here if needed #}
+             <div id="{{ chart_id }}-loading" class="text-center p-4 text-base-content/60" style="display: none;">Loading chart...</div>
+        </div>
+    </div>
+</div>

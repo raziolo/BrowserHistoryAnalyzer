@@ -1,0 +1,32 @@
+{# frontend/templates/frontend/dashboard_components/_dashboard_content.html #}
+{% load humanize %}
+
+{# Hidden script tag to pass data to JS - will be read after swap #}
+{{ chart_data_dict|json_script:"chart-data-json" }}
+
+{# KPI Row #}
+{% include 'components/dashboard/kpi_cards.html' %}
+
+{# Charts Row #}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {% include 'components/dashboard/chart_card.html' with chart_id="categoryChart" title="Category Distribution" icon="bi-pie-chart-fill" %}
+    {% include 'components/dashboard/chart_card.html' with chart_id="visitTrendChart" title="Daily Activity Trend" icon="bi-graph-up" %}
+    {% include 'components/dashboard/chart_card.html' with chart_id="browserChart" title="Browser Usage" icon="bi-window-split" %}
+    {% include 'components/dashboard/chart_card.html' with chart_id="hourlyActivityChart" title="Activity by Hour" icon="bi-clock-history" %}
+    {% include 'components/dashboard/chart_card.html' with chart_id="dayOfWeekChart" title="Activity by Day of Week" icon="bi-calendar3-week" %}
+
+</div>
+
+{# Top Lists Row #}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {% include 'components/dashboard/top_domains_card.html' %}
+    {% include 'components/dashboard/category_probability_list.html' %}
+
+    {# Add other lists or detailed tables here if needed #}
+    {# Example: {% include 'frontend/dashboard_components/_recent_activity_card.html' %} #}
+</div>
+
+{# Data generation info #}
+ <footer class="text-center text-base-content/60 text-sm pt-4">
+    Data filtered from {{ analytics.first_visit_date|date:"M d, Y H:i"|default:"N/A" }} to {{ analytics.last_visit_date|date:"M d, Y H:i"|default:"N/A" }}
+</footer>

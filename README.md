@@ -56,11 +56,20 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
    - Ensure the local API is running at `http://localhost:1234/v1`  
 
 
-4. 🤠 **Run Django App**
+4. **Run Django App**
    ```bash
    python run_django_frontend.py
    ``` 
+
+5. **Tweak Settings**  
+   - Adjust settings to your needs
+
+
+6. **Run the Analyzer**  
+   - In the **Classification**  Tab
+
 ---
+
 
 ## 🛠 **How It Works**  
 
@@ -78,27 +87,29 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
 - Other  
 
 ### **3. Visualization Phase**  
-📊 Generates an **interactive HTML dashboard** (`visualization/output/browsing_dashboard.html`) with:  
-- Category distribution charts  
-- Daily activity timeline  
-- Recent browsing tables  
-
-## 📊 **Dashboard Overview**
-![Dashboard Screenshot](https://i.ibb.co/7NyQNc8p/image.png)
+**Saves** the categorized data to SQLite database  
+**Displays** the data in an interactive dashboard using Django
 ---
 
-## 📊 **Classification Overview**
-![Dashboard Screenshot](https://i.ibb.co/7NyQNc8p/image.png)
+## **Dashboard Overview**
+![Dashboard Screenshot]()
 ---
 
-## 📅 **History Overview**
-![History Screenshot](https://i.ibb.co/KcpR2rwr/image.png)
+## **Detailed Analytics Overview**
+![Detailed Analytics Screenshot]()
 ---
 
-## 🛠 **Settings Overview**
-![Settings Screenshot](https://i.ibb.co/KcpR2rwr/image.png)
+##  **Classification Overview**
+![Classification Screenshot]()
 ---
 
+## **History Overview**
+![History Screenshot]()
+---
+
+##  **Settings Overview**
+![Settings Screenshot]()
+---
 
 ## ❓ **FAQs**  
 

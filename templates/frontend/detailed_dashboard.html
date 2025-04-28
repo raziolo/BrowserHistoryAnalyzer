@@ -1,0 +1,315 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+{% load humanize %} {# For formatting numbers nicely, add 'django.contrib.humanize' to INSTALLED_APPS #}
+
+{% block title %}{{ title|default:"Detailed Dashboard" }}{% endblock %}
+
+
+
+{% block content %}
+<div class="space-y-6">
+
+    {# Dashboard Header & Filters - Include the filter component #}
+    {% include 'components/dashboard/date_filter.html' %}
+
+    {# Main Dashboard Content Area - This will be targeted by HTMX #}
+    <div id="dashboard-content" class="space-y-6 fade-in">
+        {# Include the actual content partial #}
+        {% include 'components/dashboard/detailed_dashboard_content.html' %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /**
+     * Initializes or updates charts on the dashboard based on provided data.
+     * Handles cases where data might be missing or empty for specific charts.
+     *
+     * @param {object} chartData - The data object containing labels and values for charts.
+     */
+    function initializeCharts(chartData) {
+        // IDs of all chart canvas elements managed by this function
+        const chartIds = [
+            'categoryChart', 'browserChart', 'visitTrendChart',
+            'hourlyActivityChart', 'dayOfWeekChart'
+        ];
+
+        // --- Helper Functions ---
+
+        /**
+         * Hides the chart canvas and displays a message in its place.
+         * Also destroys any existing Chart.js instance for that canvas.
+         * @param {string} chartId - The base ID of the chart canvas (e.g., 'categoryChart').
+         * @param {string} message - The message to display.
+         */
+        function showChartMessage(chartId, message) {
+            const canvas = document.getElementById(chartId);
+            const messageDiv = document.getElementById(`${chartId}-message`);
+
+            // Ensure any lingering chart instance is destroyed first
+            let existingChart = Chart.getChart(chartId);
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            if (canvas) canvas.style.display = 'none'; // Hide canvas
+
+            if (messageDiv) {
+                messageDiv.textContent = message;
+                messageDiv.style.display = 'flex'; // Show message div (using flex for centering)
+            } else {
+                console.warn(`Message div not found for chart ID: ${chartId}-message`);
+            }
+        }
+
+        /**
+         * Shows the chart canvas and hides the corresponding message div.
+         * @param {string} chartId - The base ID of the chart canvas.
+         */
+        function showChartCanvas(chartId) {
+            const canvas = document.getElementById(chartId);
+            const messageDiv = document.getElementById(`${chartId}-message`);
+
+            if (messageDiv) messageDiv.style.display = 'none'; // Hide message
+
+            if (canvas) {
+                 canvas.style.display = 'block'; // Show canvas
+            } else {
+                 console.warn(`Canvas not found for chart ID: ${chartId}`);
+            }
+        }
+
+        // --- Destroy ALL potentially existing charts first (safer approach) ---
+        chartIds.forEach(id => {
+            let existingChart = Chart.getChart(id);
+            if (existingChart) {
+                existingChart.destroy();
+            }
+        });
+
+        // --- Initialize or Update Each Chart ---
+
+        // 1. Category Distribution Chart (Doughnut)
+        const ctxCategory = document.getElementById('categoryChart');
+        if (ctxCategory && chartData.category_labels && chartData.category_labels.length > 0) {
+            showChartCanvas('categoryChart'); // Ensure canvas is visible
+            new Chart(ctxCategory, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.category_labels,
+                    datasets: [{
+                        label: 'Visits by Category',
+                        data: chartData.category_values,
+                        backgroundColor: [ // Add more colors if needed
+                            '#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6',
+                            '#34495e', '#1abc9c', '#e67e22', '#7f8c8d', '#f39c12',
+                            '#c0392b', '#2980b9', '#27ae60', '#d35400', '#8e44ad'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+                    }
+                }
+            });
+        } else if (ctxCategory) {
+            showChartMessage('categoryChart', 'No category data for this period.');
+        }
+
+        // 2. Browser Distribution Chart (Pie)
+        const ctxBrowser = document.getElementById('browserChart');
+        if (ctxBrowser && chartData.browser_labels && chartData.browser_labels.length > 0) {
+            showChartCanvas('browserChart');
+            new Chart(ctxBrowser, {
+                type: 'pie',
+                 data: {
+                    labels: chartData.browser_labels,
+                    datasets: [{
+                        label: 'Visits by Browser',
+                        data: chartData.browser_values,
+                         backgroundColor: ['#e67e22', '#3498db', '#95a5a6', '#2ecc71', '#f1c40f'], // Example colors
+                        hoverOffset: 4
+                    }]
+                },
+                 options: {
+                     responsive: true,
+                     maintainAspectRatio: false,
+                     plugins: {
+                         legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+                    }
+                }
+            });
+        } else if (ctxBrowser) {
+            showChartMessage('browserChart', 'No browser data for this period.');
+        }
+
+        // 3. Visit Trend Chart (Line)
+        const ctxVisitTrend = document.getElementById('visitTrendChart');
+        // Check if there are actual data points
+        if (ctxVisitTrend && chartData.visit_trend_labels && chartData.visit_trend_values.length > 0) {
+             showChartCanvas('visitTrendChart');
+             new Chart(ctxVisitTrend, {
+                type: 'line',
+                 data: {
+                    labels: chartData.visit_trend_labels,
+                    datasets: [{
+                        label: 'Daily History Entries',
+                        data: chartData.visit_trend_values,
+                        fill: true, // Fill below line
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Fill color
+                        tension: 0.1, // Smooth curve
+                        pointRadius: 3,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } },
+                        x: { grid: { display: false } }
+                     },
+                     plugins: {
+                        legend: { display: true, position: 'top', align: 'end' }
+                     }
+                }
+            });
+        } else if (ctxVisitTrend) {
+            showChartMessage('visitTrendChart', 'No visit trend data for this period.');
+        }
+
+        // 4. Hourly Activity Chart (Bar)
+        const ctxHourly = document.getElementById('hourlyActivityChart');
+        // Check if there's actually any non-zero activity data across hours
+        const hasHourlyData = chartData.activity_hour_values && chartData.activity_hour_values.some(count => count > 0);
+        if (ctxHourly && chartData.activity_hour_labels && hasHourlyData) {
+             showChartCanvas('hourlyActivityChart');
+             new Chart(ctxHourly, {
+                type: 'bar',
+                 data: {
+                    labels: chartData.activity_hour_labels,
+                     datasets: [{
+                        label: 'Entries by Hour of Day',
+                        data: chartData.activity_hour_values,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue bars
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4 // Slightly rounded bars
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } },
+                        x: { ticks: { maxRotation: 0, minRotation: 0 }, grid: { display: false } }
+                     },
+                    plugins: {
+                        legend: { display: false } // Title is clear enough
+                    }
+                }
+            });
+        } else if (ctxHourly) {
+            showChartMessage('hourlyActivityChart', 'No hourly activity data for this period.');
+        }
+
+        // 5. Day of Week Chart (Bar)
+        const ctxDayOfWeek = document.getElementById('dayOfWeekChart');
+        // Check if there's actually any non-zero activity data across days
+        const hasDayData = chartData.day_of_week_values && chartData.day_of_week_values.some(count => count > 0);
+        if (ctxDayOfWeek && chartData.day_of_week_labels && hasDayData) {
+             showChartCanvas('dayOfWeekChart');
+             new Chart(ctxDayOfWeek, {
+                type: 'bar',
+                 data: {
+                    labels: chartData.day_of_week_labels, // Should be Mon-Sun order from view
+                     datasets: [{
+                        label: 'Entries by Day of Week',
+                         data: chartData.day_of_week_values,
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)', // Orange bars
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                         legend: { display: false }
+                    }
+                }
+            });
+        } else if (ctxDayOfWeek) {
+            showChartMessage('dayOfWeekChart', 'No activity recorded on any day in this period.');
+        }
+
+    } // --- End of initializeCharts function ---
+
+
+    // --- Initial Chart Load ---
+    // Wrapped in DOMContentLoaded for safety, although usually extra_js block runs after DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        const initialChartDataEl = document.getElementById('chart-data-json');
+        if (initialChartDataEl) {
+            try {
+                const initialChartData = JSON.parse(initialChartDataEl.textContent);
+                initializeCharts(initialChartData);
+            } catch (e) {
+                 console.error("Error parsing initial chart data:", e);
+                 // Optionally display a global error message on the dashboard
+                 const dashboardContent = document.getElementById('dashboard-content');
+                 if (dashboardContent) {
+                     dashboardContent.innerHTML = '<div class="alert alert-error">Could not load dashboard charts. Please check console for details.</div>';
+                 }
+            }
+        } else {
+             console.error("Initial chart data script tag ('chart-data-json') not found.");
+             // Display error if the critical data script is missing
+             const dashboardContent = document.getElementById('dashboard-content');
+             if (dashboardContent) {
+                 dashboardContent.innerHTML = '<div class="alert alert-error">Critical chart data script missing. Dashboard cannot load.</div>';
+             }
+        }
+    });
+
+
+    // --- HTMX Event Listener for Updates ---
+    // Re-initialize charts after HTMX swaps new content into #dashboard-content
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        // Ensure the swap targeted our main content area
+        if (event.detail.target.id === 'dashboard-content') {
+            console.log('HTMX swap detected for #dashboard-content. Re-initializing charts...');
+            const newChartDataEl = document.getElementById('chart-data-json');
+            if (newChartDataEl) {
+                try {
+                     const newChartData = JSON.parse(newChartDataEl.textContent);
+                     // console.log('Parsed chart data after swap:', newChartData); // Uncomment for debugging
+                     setTimeout(() => {
+                         initializeCharts(newChartData);
+                     }, 50);
+                } catch (e) {
+                    console.error("Error parsing chart data after HTMX swap:", e);
+                     // You might want to display an error within the swapped content
+                     event.detail.target.innerHTML = '<div class="alert alert-error">Could not update charts after filtering. Please check console.</div>';
+                }
+            } else {
+                console.error("Chart data script tag ('chart-data-json') not found after HTMX swap.");
+                 event.detail.target.innerHTML = '<div class="alert alert-error">Critical chart data script missing after update. Dashboard cannot load.</div>';
+            }
+        }
+    });
+
+</script>
+{% endblock %}

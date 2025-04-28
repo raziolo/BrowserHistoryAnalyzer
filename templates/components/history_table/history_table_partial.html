@@ -1,0 +1,57 @@
+{# frontend/templates/frontend/history_table_partial.html #}
+{% load django_tables2 %}
+{% load frontend_tags %} {# Load custom tags #}
+
+<div class="overflow-x-auto"> {# Handle potential horizontal overflow #}
+    {% render_table table %}
+</div>
+
+{# --- Enhanced Pagination Controls --- #}
+{% if table.page and table.page.paginator.num_pages > 1 %} {# Only show if multiple pages exist #}
+<div class="flex flex-wrap justify-center items-center gap-2 mt-4 p-4" x-data="pagination()">
+    {# Previous Button #}
+    <a class="btn btn-sm btn-outline {% if not table.page.has_previous %}btn-disabled{% endif %}"
+       {% if table.page.has_previous %}
+           {# Only add functional attributes if clickable #}
+           href="?{% param_replace page=table.page.previous_page_number %}"
+           hx-get="?{% param_replace page=table.page.previous_page_number %}"
+           hx-target="#history-table-content"
+           hx-swap="innerHTML"
+           hx-indicator="#loading-indicator"
+       {% else %}
+           {# Safe href and ARIA attribute when disabled #}
+           href="#"
+           aria-disabled="true"
+       {% endif %}
+    >« Prev</a>
+
+    {# Page Number Info & Go To Page Input (remains the same) #}
+    <div class="flex items-center gap-2">
+        <span class="text-sm whitespace-nowrap">
+            Page {{ table.page.number }} of {{ table.page.paginator.num_pages }}
+        </span>
+    </div>
+
+    {# Next Button #}
+    <a class="btn btn-sm btn-outline {% if not table.page.has_next %}btn-disabled{% endif %}"
+       {% if table.page.has_next %}
+           {# Only add functional attributes if clickable #}
+           href="?{% param_replace page=table.page.next_page_number %}"
+           hx-get="?{% param_replace page=table.page.next_page_number %}"
+           hx-push-url="true"
+           hx-target="#history-table-content"
+           hx-swap="innerHTML"
+           hx-indicator="#loading-indicator"
+       {% else %}
+           {# Safe href and ARIA attribute when disabled #}
+           href="#"
+           aria-disabled="true"
+       {% endif %}
+    >Next »</a>
+
+     {# Hidden element to trigger HTMX request for 'Go To Page' #}
+</div>
+
+
+{% endif %}
+{# --- End Enhanced Pagination Controls --- #}

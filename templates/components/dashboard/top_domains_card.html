@@ -1,0 +1,27 @@
+{# frontend/templates/frontend/dashboard_components/_top_domains_card.html #}
+{% load humanize %}
+<div class="card bg-base-100 shadow h-full flex flex-col">
+    <div class="card-body pb-2">
+        <h2 class="card-title text-base font-semibold mb-2">
+            <i class="bi bi-trophy-fill mr-2 text-warning"></i>
+            Top 10 Visited Domains
+        </h2>
+    </div>
+    <div class="px-4 py-2 scrollable-list flex-grow"> {# Use existing scrollable class #}
+        {% if analytics.top_domains %}
+        <ul class="space-y-2">
+            {% for domain, count in analytics.top_domains %}
+            <li class="flex justify-between items-center text-sm border-b border-base-300/50 pb-1 last:border-b-0">
+                <span class="truncate mr-2" title="{{ domain }}">{{ domain }}</span>
+                <span class="badge badge-ghost badge-sm">{{ count|intcomma }} URL{{ count|pluralize }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-center text-sm text-base-content/60 p-4">No domain data found for this period.</p>
+        {% endif %}
+    </div>
+    <div class="card-body pt-0 pb-4">
+         {# Footer if needed #}
+    </div>
+</div>

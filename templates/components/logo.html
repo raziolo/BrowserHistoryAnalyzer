@@ -1,0 +1,8 @@
+{% load static %}
+{# Place this structure where the original h3 tag was in base.html #}
+<div class="flex flex-col items-center mb-6 text-center"> {# Centered column layout #}
+    {# --- SVG LOGO GOES HERE --- #}
+    <img src="{% static 'imgs/logo.png' %}" alt="Logo" class="w-16 h-16 mb-2">
+    {# --- App Title Below --- #}
+    <h3 class="text-lg font-bold">History Analyzer</h3> {# Slightly smaller text #}
+</div>

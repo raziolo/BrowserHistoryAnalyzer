@@ -36,9 +36,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Local apps
     'frontend',
+
+    # 3rd party apps
     'django_tables2',
     'django_filters',
+    'django.contrib.humanize',
+    'widget_tweaks',
 
 
 ]
@@ -66,6 +72,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                'frontend.context_processors.classification_status_processor',
+
             ],
         },
     },
