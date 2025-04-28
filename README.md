@@ -92,23 +92,23 @@ This tool **backups**, **classifies**, and **visualizes** your Chrome/Firefox hi
 ---
 
 ## **Dashboard Overview**
-![Dashboard Screenshot]()
+![Dashboard Screenshot](https://raw.githubusercontent.com/raziolo/BrowserHistoryAnalyzer/refs/heads/master/screenshots/dashboard.png)
 ---
 
 ## **Detailed Analytics Overview**
-![Detailed Analytics Screenshot]()
+![Detailed Analytics Screenshot](https://github.com/raziolo/BrowserHistoryAnalyzer/blob/master/screenshots/detailed_dashboard.png)
 ---
 
 ##  **Classification Overview**
-![Classification Screenshot]()
+![Classification Screenshot](https://raw.githubusercontent.com/raziolo/BrowserHistoryAnalyzer/refs/heads/master/screenshots/classification_start.png)
 ---
 
 ## **History Overview**
-![History Screenshot]()
+![History Screenshot](https://raw.githubusercontent.com/raziolo/BrowserHistoryAnalyzer/refs/heads/master/screenshots/history.png)
 ---
 
 ##  **Settings Overview**
-![Settings Screenshot]()
+![Settings Screenshot](https://raw.githubusercontent.com/raziolo/BrowserHistoryAnalyzer/refs/heads/master/screenshots/settings.png)
 ---
 
 ## ❓ **FAQs**  
