@@ -1,4 +1,10 @@
 # classifier.py
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'HistoryApp.settings')
+
+import django
+django.setup()
+
 import json
 import logging
 import time
@@ -164,16 +170,23 @@ if __name__ == "__main__":
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
 
+    # Initialize classifier with model and API URL
     classifier = HistoryClassifier(
-        model_name='gemma-3-4b-it', # granite-3.1-8b-instruct
+        model_name='gemma-3-4b-it',  # or 'granite-3.1-8b-instruct'
         base_url='http://localhost:1234/v1'
     )
 
+    # Define a default 30-day date range
+    from datetime import datetime, timedelta
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=30)
+
     print("Classifying Chrome History:")
-    chrome_results = classifier.classify_history("chrome")
+    chrome_results = classifier.classify_history("chrome", start_date, end_date)
     classifier.print_results(chrome_results)
 
     print("\nClassifying Firefox History:")
-    firefox_results = classifier.classify_history("firefox")
+    firefox_results = classifier.classify_history("firefox", start_date, end_date)
     classifier.print_results(firefox_results)
+
 
