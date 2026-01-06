@@ -17,7 +17,6 @@ def settings_view(request):
 
     # Define defaults
     defaults = {
-        'days_to_analyze': 7,
         'temperature': 0.1,
         'max_tokens': 1000,
         'categories': [
@@ -34,10 +33,6 @@ def settings_view(request):
             categories_list = cleaned_data['categories'] # Already a list
 
             # Save settings using update_or_create
-            App_Settings.objects.update_or_create(
-                name='days_to_analyze',
-                defaults={'value': cleaned_data['days_to_analyze']}
-            )
             App_Settings.objects.update_or_create(
                 name='temperature',
                 defaults={'value': cleaned_data['temperature']}
@@ -76,7 +71,6 @@ def settings_view(request):
     else: # GET Request
         # Load initial data from the database
         initial_data = {
-            'days_to_analyze': get_setting('days_to_analyze', defaults['days_to_analyze']),
             'temperature': get_setting('temperature', defaults['temperature']),
             'max_tokens': get_setting('max_tokens', defaults['max_tokens']),
             'current_model': get_setting('current_model', defaults['current_model']), # Load current model

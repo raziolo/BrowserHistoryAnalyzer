@@ -11,14 +11,6 @@ from django import forms
 import json
 
 class SettingsForm(forms.Form):
-    days_to_analyze = forms.IntegerField(
-        label="Days to Analyze",
-        min_value=1,
-        max_value=365,
-        # initial=7, # Initial is now set in the view based on DB
-        help_text="Number of past days of history to fetch and classify.",
-        widget=forms.NumberInput(attrs={'class': 'input input-bordered w-full'})
-    )
     temperature = forms.FloatField(
         label="LLM Temperature",
         min_value=0.0,

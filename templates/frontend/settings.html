@@ -17,24 +17,6 @@
             <form method="POST" class="space-y-6">
                 {% csrf_token %}
 
-                <!-- Days to Analyze -->
-                <div class="form-control">
-                    <label class="label" for="{{ form.days_to_analyze.id_for_label }}">
-                        <span class="label-text">{{ form.days_to_analyze.label }}</span>
-                    </label>
-                    {{ form.days_to_analyze }}
-                    {% if form.days_to_analyze.help_text %}
-                    <div class="text-sm text-base-content/60 mt-1">
-                        {{ form.days_to_analyze.help_text }}
-                    </div>
-                    {% endif %}
-                    {% if form.days_to_analyze.errors %}
-                    <div class="text-error text-sm mt-1">
-                        {{ form.days_to_analyze.errors|striptags }}
-                    </div>
-                    {% endif %}
-                </div>
-
                 <!-- Current Categories (Read-Only Bubbles) -->
                  <div class="form-control">
                     <label class="label">

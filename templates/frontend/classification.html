@@ -53,6 +53,51 @@
                         </div>
                     </div>
 
+                    {# Date Range + Options #}
+                    <div class="space-y-4 mb-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Start date</span>
+                            </label>
+                            <input
+                                type="date"
+                                name="start_date"
+                                value="{{ start_date }}"
+                                class="input input-bordered w-full"
+                                {% if not can_start_classification %} disabled {% endif %}
+                                required
+                            />
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">End date</span>
+                            </label>
+                            <input
+                                type="date"
+                                name="end_date"
+                                value="{{ end_date }}"
+                                class="input input-bordered w-full"
+                                {% if not can_start_classification %} disabled {% endif %}
+                                required
+                            />
+                        </div>
+                        <div class="form-control">
+                            <label class="label cursor-pointer justify-between">
+                                <span class="label-text">Reclassify entries already saved</span>
+                                <input
+                                    type="checkbox"
+                                    name="reclassify_existing"
+                                    class="checkbox"
+                                    {% if reclassify_existing %} checked {% endif %}
+                                    {% if not can_start_classification %} disabled {% endif %}
+                                />
+                            </label>
+                            <div class="text-xs text-base-content/60">
+                                Hint: when unchecked, URLs already in the database are skipped to speed up runs.
+                            </div>
+                        </div>
+                    </div>
+
                     {# Action Button - Modified for Alpine #}
                     <div class="mt-auto">
                         <button
